@@ -1,0 +1,37 @@
+spring.datasource:
+    url: jdbc:mysql://211.103.91.80:3306/iclock?useUnicode=true&characterEncoding=utf8&autoReconnect=true
+    username: albertzl
+    password: echo780710
+    driverClassName: com.mysql.jdbc.Driver
+    testOnBorrow: true
+    validationQuery: SELECT 1
+    initialize: false
+    initial-size: 10
+    max-active: 100
+    min-idle: 8
+    max-idle: 8
+
+spring.jpa:
+    hibernate:
+        ddl-auto: none
+        show_sql: true
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+        
+logging: 
+     config: classpath:log4j2.xml
+     
+server:
+    port: 8080
+    sessionTimeout: 30
+    contextPath: /iclock/
+    
+    tomcat:
+        accesslog:
+          directory: D:\\logs # Directory in which log files are created. Can be relative to the tomcat base dir or absolute.
+          enabled: true   # Enable access log.
+          pattern: common # Format pattern for access logs.
+          prefix: access_log # Log file name prefix.
+          suffix: .log # Log file name suffix.
+    
+

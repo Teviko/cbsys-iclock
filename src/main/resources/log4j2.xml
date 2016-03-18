@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Configuration status="info">
+	<Appenders>
+		<RollingFile name="RollingFile" filename="D:\\iclock.log" filepattern="D:\\iclock.%date{yyyy-MM-dd}.log" immediateFlush="false" append="true">
+			<PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %level [%c][%file:%line] - %msg%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+				<SizeBasedTriggeringPolicy size="10 GB"/>
+			</Policies>
+			<DefaultRolloverStrategy max="30"/>
+		</RollingFile>
+		<Console name="Console" target="SYSTEM_OUT" follow="true">
+			<PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %level [%c][%file:%line] - %msg%n" />
+		</Console>
+	</Appenders>
+	<Loggers>
+		<AsyncLogger name="cbsys" level="info" includeLocation="true">
+			<AppenderRef ref="RollingFile"/>			
+			<AppenderRef ref="Console"/>
+		</AsyncLogger>
+		<AsyncRoot level="info" includeLocation="true">
+			<AppenderRef ref="RollingFile"/>			
+			<AppenderRef ref="Console"/>
+		</AsyncRoot>
+	</Loggers>
+</Configuration>
