@@ -69,6 +69,17 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- http client -->
+		<dependency>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5</artifactId>
+			<version>5.0-alpha1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5-fluent</artifactId>
+			<version>5.0-alpha1</version>
+		</dependency>
 
 		<!-- utils -->
 		<dependency>

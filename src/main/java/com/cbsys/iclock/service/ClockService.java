@@ -1,10 +1,12 @@
 package com.cbsys.iclock.service;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
@@ -12,6 +14,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -294,7 +298,35 @@ public class ClockService {
 		}
 	}
 
-	public void syncAttRecords() {
+	private static final String TMS_URL = "http://114.23.34.60:9090/import/pr?token=";
 
+	public void syncAttRecords() throws IOException {
+		List<AttRecord> attRecords = attRecordDao.findTop100BySyncFlag(0);
+		if (CollectionUtils.isEmpty(attRecords))
+			return;
+		Map<String, StringBuilder> syncMaps = new HashMap<String, StringBuilder>();
+		for (AttRecord ar : attRecords) {
+			ar.setSyncFlag(1);
+			ar.setUpdateTime(new Timestamp(System.currentTimeMillis()));
+			attRecordDao.save(ar);
+			StringBuilder msg = syncMaps.get(ar.getCorpToken());
+			if (msg == null) {
+				msg = new StringBuilder();
+				msg.append(ar.makeSyncMsg());
+				syncMaps.put(ar.getCorpToken(), msg);
+				continue;
+			}
+			msg.append("\n").append(ar.getCorpToken());
+		}
+
+		for (Entry<String, StringBuilder> entry : syncMaps.entrySet()) {
+			String msg = entry.getValue().toString();
+			logger.info("CorpToken: " + entry.getKey() + "=====records: " + msg);
+			int code = Request.Post(TMS_URL + entry.getKey()).bodyString(msg, ContentType.TEXT_PLAIN).execute().returnResponse().getCode();
+			logger.info("HTTP Response Code: " + code);
+			if (code != 200)
+				throw new IOException();
+		}
 	}
+
 }
