@@ -2,7 +2,7 @@
 
 <Configuration status="info">
 	<Appenders>
-		<RollingFile name="RollingFile" filename="D:\\iclock.log" filepattern="D:\\iclock.%date{yyyy-MM-dd}.log" immediateFlush="false" append="true">
+		<RollingFile name="RollingFile" filename="D:\\logs\iclock.log" filepattern="D:\\logs\iclock.%date{yyyy-MM-dd}.log" immediateFlush="false" append="true">
 			<PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %level [%c][%file:%line] - %msg%n" />
 			<Policies>
 				<TimeBasedTriggeringPolicy interval="1" modulate="true" />

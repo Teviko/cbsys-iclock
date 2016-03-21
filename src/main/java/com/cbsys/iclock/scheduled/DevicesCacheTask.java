@@ -21,7 +21,7 @@ public class DevicesCacheTask {
 	private static final Log logger = LogFactory.getLog(DevicesCacheTask.class);
 	private final static Object Running = new Object();
 
-	@Scheduled(initialDelay = 10000, fixedDelay = 20000)
+	@Scheduled(initialDelay = 1000, fixedDelay = 20000)
 	public void scanDevicesFromDB() {
 		synchronized (Running) {
 			logger.info("======================scan all devices into Cache (Beginning)--------------------");
@@ -34,7 +34,7 @@ public class DevicesCacheTask {
 		}
 	}
 
-	@Scheduled(initialDelay = 30000, fixedDelay = 67000)
+	@Scheduled(initialDelay = 20000, fixedDelay = 57000)
 	public void updateDevicesToDB() {
 		synchronized (Running) {
 			logger.info("======================Flush new status into  DB (Beginning)--------------------");

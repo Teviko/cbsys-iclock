@@ -2,6 +2,7 @@ package com.cbsys.iclock.service;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -46,7 +47,7 @@ public class DeviceService {
 		if (device == null)
 			return null;
 		boolean needInfoCMD = false;
-		if (StringUtils.isBlank(device.getDeviceModel()))
+		if (StringUtils.isBlank(device.getDeviceVersion()))
 			needInfoCMD = true;
 		processUpdateDevice(device, vo, null);
 		if (needInfoCMD) {
@@ -114,7 +115,8 @@ public class DeviceService {
 	public void scanAllDevices() {
 		List<Object[]> devices = attDeviceDao.findAllDevices();
 		logger.info(" Devices from DB ======= Total Count: " + devices.size());
-		Set<String> sn = DEVICES.asMap().keySet();
+		Set<String> sn = new HashSet<String>();
+		sn.addAll(DEVICES.asMap().keySet());
 		List<Object[]> devicesCMD = attDeviceCMDDao.findAllCMDStats();
 		Map<String, Long> cmdCounts = new HashMap<String, Long>();
 		for (Object[] cmd : devicesCMD) {
@@ -123,7 +125,7 @@ public class DeviceService {
 			cmdCounts.put(cmd[0].toString(), new Long(cmd[1].toString()));
 		}
 		for (Object[] obj : devices) {
-			if (obj == null || obj.length != 7)
+			if (obj == null || obj.length != 8)
 				continue;
 			DeviceInfo d = new DeviceInfo(obj);
 			sn.remove(d.getSn());
@@ -139,7 +141,7 @@ public class DeviceService {
 			di.setDbLastOnlineTime(d.getDbLastOnlineTime());
 			di.setDeviceMode(d.getDeviceMode());
 			di.setDeviceType(d.getDeviceType());
-			Long count = cmdCounts.get(d.getId());
+			Long count = cmdCounts.get(d.getSn());
 			if (count == null)
 				count = 0l;
 			di.setId(d.getId());

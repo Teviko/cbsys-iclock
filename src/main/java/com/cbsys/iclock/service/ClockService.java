@@ -186,7 +186,7 @@ public class ClockService {
 	}
 
 	/**
-	 * USER PIN=982 Name=Richard Passwd=9822 Card=[09E4812202] Grp=1 TZ=
+	 * USER PIN=4 Name= Pri=0 Passwd= Card=[0000000000] Grp=1  TZ=0000000
 	 */
 	public void processUSER(DeviceInfo d, String[] tokens, Map<String, Staff> staffMaps, Timestamp cur, String line) {
 		if (tokens == null || tokens.length != 6) {
@@ -206,16 +206,17 @@ public class ClockService {
 			staffMaps.put(attNo, staffs.get(0));
 		}
 		try {
+			staff.setPri(Integer.valueOf(tokens[2].substring(4)));
 			staff.setCorpToken(d.getCorpToken());
 			staff.setSerialNumber(d.getSn());
 			staff.setPin(attNo);
 			staff.setName(tokens[1].substring(5));
 			staff.setUpdateTime(cur);
-			staff.setPassword(tokens[2].substring(7));
-			if (StringUtils.isNotEmpty(tokens[3]) && tokens[3].length() > 5 && !STAFF_NO_CARD_PATTERN.matcher(tokens[3]).find())
-				staff.setCard(tokens[3].substring(6).replace("]", ""));
-			staff.setGrp(tokens[4].substring(4).trim());
-			staff.setTz(tokens[5].substring(3).trim());
+			staff.setPassword(tokens[3].substring(7));
+			if (StringUtils.isNotEmpty(tokens[4]) && tokens[4].length() > 5 && !STAFF_NO_CARD_PATTERN.matcher(tokens[4]).find())
+				staff.setCard(tokens[4].substring(6).replace("]", ""));
+			staff.setGrp(tokens[5].substring(4).trim());
+			staff.setTz(tokens[6].substring(3).trim());
 			staff.setUpdateTime(cur);
 			staffDao.save(staff);
 		} catch (Exception e) {

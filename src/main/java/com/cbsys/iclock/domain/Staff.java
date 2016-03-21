@@ -12,6 +12,7 @@ public class Staff extends BaseEntity {
 	private String card;
 	private String grp;
 	private String tz;
+	private int pri;
 	private String serialNumber;
 	private String corpToken;
 
@@ -61,6 +62,14 @@ public class Staff extends BaseEntity {
 
 	public void setTz(String tz) {
 		this.tz = tz;
+	}
+
+	public int getPri() {
+		return pri;
+	}
+
+	public void setPri(int pri) {
+		this.pri = pri;
 	}
 
 	public String getSerialNumber() {

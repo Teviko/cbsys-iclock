@@ -70,6 +70,8 @@ public class CMDService {
 		List<AttDeviceCMD> result = new ArrayList<AttDeviceCMD>();
 		int maxByte = MAX_CMD_BYTE;
 		Long baseCmdSN = attDeviceCMDDao.getCMDMaxSNByDevice(cmds.get(0).getSerialNumber(), cmds.get(0).getCorpToken());
+		if (baseCmdSN == null)
+			baseCmdSN = 0l;
 		for (AttDeviceCMD cmd : cmds) { // 更新命令记录的发送时间和命令状态标志
 			baseCmdSN++;
 			cmd.setCmdSN(baseCmdSN);

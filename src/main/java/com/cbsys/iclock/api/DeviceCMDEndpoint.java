@@ -26,11 +26,11 @@ public class DeviceCMDEndpoint {
 	@Autowired
 	private CMDService cmdService;
 
-	@RequestMapping(value = "/devicecmd", method = RequestMethod.POST, consumes = "text/plain", produces = "text/plain")
+	@RequestMapping(value = "/devicecmd", method = RequestMethod.POST, produces = "text/plain")
 	@ResponseBody
 	public String doPost(@RequestBody String body, @RequestParam("SN") String sn) {
 		Timestamp begin = new Timestamp(System.currentTimeMillis());
-		logger.info("/iclock/getrequest GET:" + sn + " body: ");
+		logger.info("/iclock/devicecmd post:" + sn + " body: ");
 		logger.info(body);
 		HttpUtils.loggerRequest(logger);
 		try {

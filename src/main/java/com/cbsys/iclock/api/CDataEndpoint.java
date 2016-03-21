@@ -55,8 +55,7 @@ public class CDataEndpoint {
 	@RequestMapping(value = "/cdata", method = RequestMethod.GET, produces = "text/plain")
 	@ResponseBody
 	public String pushDeviceConfigure(@RequestParam("SN") String sn, @RequestParam(value = "options") String options,
-			@RequestParam(value = "pushver") String pushver,
-			@RequestParam(value = "language") String language) {
+			@RequestParam(value = "pushver") String pushver, @RequestParam(value = "language") String language) {
 		logger.info("/iclock/cdata GET:" + sn + "  options:" + options);
 		HttpUtils.loggerRequest(logger);
 		if (!"all".equalsIgnoreCase(options))
@@ -74,12 +73,13 @@ public class CDataEndpoint {
 		return info;
 	}
 
-	@RequestMapping(value = "/cdata", method = RequestMethod.POST, consumes = "text/plain", produces = "text/plain")
+	@RequestMapping(value = "/cdata", method = RequestMethod.POST, produces = "text/plain")
 	@ResponseBody
 	public String updateData(@RequestBody String body, @RequestParam("SN") String sn, @RequestParam(value = "table") String table,
-			@RequestParam(value = "Stamp") String stamp) {
+			@RequestParam(value = "OpStamp", required = false) String opStamp, @RequestParam(value = "Stamp", required = false) String stamp) {
 		Timestamp begin = new Timestamp(System.currentTimeMillis());
-		logger.info("/iclock/cdata POST:" + sn + "  table:" + table + "  Stamp:" + stamp);
+		String ts = (opStamp == null) ? stamp : opStamp;
+		logger.info("/iclock/cdata POST:" + sn + "  table:" + table + "  Stamp:" + ts);
 		HttpUtils.loggerRequest(logger);
 		logger.info(body);
 		DeviceInfo device = StringUtils.isBlank(sn) ? null : DeviceService.DEVICES.getIfPresent(sn);
@@ -110,7 +110,7 @@ public class CDataEndpoint {
 					arList.add(temp);
 				}
 				clockService.processAttRecords(sn, arList);
-				device.setStamp(stamp);
+				device.setStamp(ts);
 				break;
 			case "OPERLOG":
 				// 上传用户信息
@@ -120,7 +120,7 @@ public class CDataEndpoint {
 					userInfos.add(record);
 				}
 				clockService.processUserInfos(device, userInfos);
-				device.setOpStamp(stamp);
+				device.setOpStamp(ts);
 				break;
 			default:
 				logger.info("UNKNOW TABLE:" + table);
