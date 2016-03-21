@@ -18,7 +18,9 @@ import static com.cbsys.iclock.AttendanceConstants.RESP_TEXT_N;
 import static com.cbsys.iclock.AttendanceConstants.RESP_TEXT_T;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cbsys.iclock.domain.AttDevice;
 import com.cbsys.iclock.domain.AttRecord;
+import com.cbsys.iclock.exception.ErrorDataFormatException;
 import com.cbsys.iclock.exception.ErrorDeviceException;
 import com.cbsys.iclock.exception.ErrorParamsException;
 import com.cbsys.iclock.service.ClockService;
@@ -87,7 +90,7 @@ public class CDataEndpoint {
 			throw new ErrorDeviceException();
 		try {
 			Set<String> userInfos = new HashSet<String>();
-			Set<AttRecord> arList = new HashSet<AttRecord>();
+			List<AttRecord> arList = new ArrayList<AttRecord>();
 			switch (table.toUpperCase()) {
 			case "ATTLOG":
 				String[] lines = body.split(RESP_TEXT_N);
@@ -103,8 +106,9 @@ public class CDataEndpoint {
 					temp.setUtcAttTime(ClockUtils.transToUTC(rd[1], device.getTimeZoneOffset()));
 					temp.setStauts(rd.length >= 3 ? Integer.parseInt(rd[2]) : -1);
 					temp.setVerifyType(rd.length >= 4 ? Integer.parseInt(rd[3]) : -1);
-					temp.setWorkCode(rd.length >= 5 ? Integer.parseInt(rd[4]) : 0);
+					temp.setWorkCode(rd.length >= 5 ? rd[4] : "0");
 					temp.setRecordStr(record);
+					temp.setTimezoneoffset(device.getTimeZoneOffset());
 					temp.setCreateTime(new Timestamp(System.currentTimeMillis()));
 					temp.setUpdateTime(temp.getCreateTime());
 					arList.add(temp);
@@ -128,6 +132,8 @@ public class CDataEndpoint {
 			}
 			device.setLastOnlineTime(ClockUtils.getLastOnlineTime());
 			device.getModified().set(true);
+		} catch (ErrorDataFormatException e) {
+			throw e;
 		} catch (Throwable e) {
 			logger.error(LogUtil.stackTraceToString(e));
 			throw new ErrorParamsException();

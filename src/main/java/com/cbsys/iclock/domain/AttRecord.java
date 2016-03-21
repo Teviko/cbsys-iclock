@@ -3,6 +3,7 @@ package com.cbsys.iclock.domain;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import com.cbsys.iclock.utils.ClockUtils;
 
 @Entity
 @Table(name = "t_att_records")
@@ -11,9 +12,10 @@ public class AttRecord extends BaseEntity {
 	private String corpToken;
 	private String clockId;
 	private long utcAttTime;
+	private int timezoneoffset;
 	private int stauts;
 	private int verifyType = -1;
-	private int workCode;
+	private String workCode;
 	private String recordStr;//保存考勤机发来的整体记录
 	private String reserve1;
 	private String reserve2;
@@ -43,6 +45,14 @@ public class AttRecord extends BaseEntity {
 		this.clockId = clockId;
 	}
 
+	public int getTimezoneoffset() {
+		return timezoneoffset;
+	}
+
+	public void setTimezoneoffset(int timezoneoffset) {
+		this.timezoneoffset = timezoneoffset;
+	}
+
 	public long getUtcAttTime() {
 		return utcAttTime;
 	}
@@ -67,11 +77,11 @@ public class AttRecord extends BaseEntity {
 		this.verifyType = verifyType;
 	}
 
-	public int getWorkCode() {
+	public String getWorkCode() {
 		return workCode;
 	}
 
-	public void setWorkCode(int workCode) {
+	public void setWorkCode(String workCode) {
 		this.workCode = workCode;
 	}
 
@@ -116,5 +126,12 @@ public class AttRecord extends BaseEntity {
 				return id.equals(((AttRecord) another).getId());
 		} else
 			return false;
+	}
+
+	public String makeSyncMsg() {
+		StringBuilder msg = new StringBuilder(clockId);
+		msg.append(",").append(ClockUtils.transToOffsetDatetime(utcAttTime, timezoneoffset)).append(",");
+		msg.append(stauts).append(",").append(verifyType).append(",").append(workCode);
+		return msg.toString();
 	}
 }

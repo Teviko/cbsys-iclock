@@ -22,6 +22,7 @@ import com.cbsys.iclock.domain.Oplog;
 import com.cbsys.iclock.domain.Staff;
 import com.cbsys.iclock.domain.StaffFacePrint;
 import com.cbsys.iclock.domain.StaffFingerPrint;
+import com.cbsys.iclock.exception.ErrorDataFormatException;
 import com.cbsys.iclock.repository.AttRecordDao;
 import com.cbsys.iclock.repository.OplogDao;
 import com.cbsys.iclock.repository.StaffDao;
@@ -71,7 +72,7 @@ public class ClockService {
 		}
 	}
 
-	public void processUserInfos(DeviceInfo device, Collection<String> userInfos) {
+	public void processUserInfos(DeviceInfo device, Collection<String> userInfos) throws ErrorDataFormatException {
 		Map<String, Staff> staffMaps = new HashMap<String, Staff>();
 		Timestamp cur = new Timestamp(System.currentTimeMillis());
 		for (String ui : userInfos) {
@@ -104,8 +105,10 @@ public class ClockService {
 		Staff staff = staffMaps.get(attNo);
 		if (staff == null) {
 			List<Staff> staffs = staffDao.findByPinAndCorpToken(attNo, d.getCorpToken());
-			if (CollectionUtils.isNotEmpty(staffs))
-				staffMaps.put(attNo, staffs.get(0));
+			if (CollectionUtils.isNotEmpty(staffs)) {
+				staff = staffs.get(0);
+				staffMaps.put(attNo, staff);
+			}
 		}
 		try {
 			String tmp = tokens[4].substring(4);
@@ -147,8 +150,10 @@ public class ClockService {
 		Staff staff = staffMaps.get(attNo);
 		if (staff == null) {
 			List<Staff> staffs = staffDao.findByPinAndCorpToken(attNo, d.getCorpToken());
-			if (CollectionUtils.isNotEmpty(staffs))
-				staffMaps.put(attNo, staffs.get(0));
+			if (CollectionUtils.isNotEmpty(staffs)) {
+				staff = staffs.get(0);
+				staffMaps.put(attNo, staff);
+			}
 		}
 		try {
 			// 判断更新指纹表
@@ -160,6 +165,7 @@ public class ClockService {
 				fp.setCreateTime(cur);
 				fp.setUpdateTime(cur);
 				fp.setFid(fid);
+				fp.setPin(attNo);
 				fp.setSize(Integer.parseInt(tokens[2].substring(5)));
 				fp.setValid(Integer.parseInt(tokens[3].substring(6)));
 				fp.setTmp(tmp);
@@ -174,6 +180,7 @@ public class ClockService {
 				fp.setSize(Integer.parseInt(tokens[2].substring(5)));
 				fp.setValid(Integer.parseInt(tokens[3].substring(6)));
 				fp.setTmp(tmp);
+				fp.setPin(attNo);
 				fp.setSerialNumber(d.getSn());
 				fp.setCorpToken(d.getCorpToken());
 				if (staff != null)
@@ -187,11 +194,12 @@ public class ClockService {
 
 	/**
 	 * USER PIN=4 Name= Pri=0 Passwd= Card=[0000000000] Grp=1  TZ=0000000
+	 * USER PIN=4 Name= Passwd= Card=[0000000000] Grp=1  TZ=0000000 Pri=0 
 	 */
-	public void processUSER(DeviceInfo d, String[] tokens, Map<String, Staff> staffMaps, Timestamp cur, String line) {
-		if (tokens == null || tokens.length != 6) {
+	public void processUSER(DeviceInfo d, String[] tokens, Map<String, Staff> staffMaps, Timestamp cur, String line) throws ErrorDataFormatException {
+		if (tokens == null || tokens.length != 7) {
 			logger.info("Wrong UserInfo Data Format: " + d.getSn() + " $$$$ " + line);
-			return;
+			throw new ErrorDataFormatException();
 		}
 		String attNo = tokens[0].substring(9);
 		Staff staff = staffMaps.get(attNo);
@@ -203,20 +211,29 @@ public class ClockService {
 				staff = new Staff();
 				staff.setCreateTime(cur);
 			}
-			staffMaps.put(attNo, staffs.get(0));
+			staffMaps.put(attNo, staff);
 		}
 		try {
-			staff.setPri(Integer.valueOf(tokens[2].substring(4)));
 			staff.setCorpToken(d.getCorpToken());
 			staff.setSerialNumber(d.getSn());
 			staff.setPin(attNo);
 			staff.setName(tokens[1].substring(5));
 			staff.setUpdateTime(cur);
-			staff.setPassword(tokens[3].substring(7));
-			if (StringUtils.isNotEmpty(tokens[4]) && tokens[4].length() > 5 && !STAFF_NO_CARD_PATTERN.matcher(tokens[4]).find())
-				staff.setCard(tokens[4].substring(6).replace("]", ""));
-			staff.setGrp(tokens[5].substring(4).trim());
-			staff.setTz(tokens[6].substring(3).trim());
+			if (tokens[2].indexOf("Passwd") >= 0) {
+				staff.setPassword(tokens[2].substring(7));
+				if (StringUtils.isNotEmpty(tokens[3]) && tokens[3].length() > 5 && !STAFF_NO_CARD_PATTERN.matcher(tokens[3]).find())
+					staff.setCard(tokens[3].substring(6).replace("]", ""));
+				staff.setGrp(tokens[4].substring(4).trim());
+				staff.setTz(tokens[5].substring(3).trim());
+				staff.setPri(Integer.valueOf(tokens[6].substring(4)));
+			} else {
+				staff.setPri(Integer.valueOf(tokens[2].substring(4)));
+				staff.setPassword(tokens[3].substring(7));
+				if (StringUtils.isNotEmpty(tokens[4]) && tokens[4].length() > 5 && !STAFF_NO_CARD_PATTERN.matcher(tokens[4]).find())
+					staff.setCard(tokens[4].substring(6).replace("]", ""));
+				staff.setGrp(tokens[5].substring(4).trim());
+				staff.setTz(tokens[6].substring(3).trim());
+			}
 			staff.setUpdateTime(cur);
 			staffDao.save(staff);
 		} catch (Exception e) {
@@ -277,4 +294,7 @@ public class ClockService {
 		}
 	}
 
+	public void syncAttRecords() {
+
+	}
 }

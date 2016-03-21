@@ -141,6 +141,7 @@ public class DeviceService {
 			di.setDbLastOnlineTime(d.getDbLastOnlineTime());
 			di.setDeviceMode(d.getDeviceMode());
 			di.setDeviceType(d.getDeviceType());
+			di.setTimeZoneOffset(d.getTimeZoneOffset());
 			Long count = cmdCounts.get(d.getSn());
 			if (count == null)
 				count = 0l;

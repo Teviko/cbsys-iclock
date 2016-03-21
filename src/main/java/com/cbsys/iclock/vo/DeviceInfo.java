@@ -35,7 +35,7 @@ public class DeviceInfo {
 		this.offsiteAtt = Integer.parseInt(fromDB[4].toString());
 		this.deviceType = Integer.parseInt(fromDB[5].toString());
 		this.corpToken = fromDB[6].toString();
-		this.offsiteAtt = Integer.parseInt(fromDB[7].toString());
+		this.timeZoneOffset = Integer.parseInt(fromDB[7].toString());
 	}
 
 	public String getCorpToken() {
