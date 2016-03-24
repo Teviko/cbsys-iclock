@@ -316,7 +316,7 @@ public class ClockService {
 				syncMaps.put(ar.getCorpToken(), msg);
 				continue;
 			}
-			msg.append("\n").append(ar.getCorpToken());
+			msg.append("\n").append(ar.makeSyncMsg());
 		}
 
 		for (Entry<String, StringBuilder> entry : syncMaps.entrySet()) {

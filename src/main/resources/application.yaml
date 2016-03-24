@@ -28,7 +28,7 @@ server:
     
     tomcat:
         accesslog:
-          directory: D:\\logs # Directory in which log files are created. Can be relative to the tomcat base dir or absolute.
+          directory: /home/logs # Directory in which log files are created. Can be relative to the tomcat base dir or absolute.
           enabled: true   # Enable access log.
           pattern: common # Format pattern for access logs.
           prefix: access_log # Log file name prefix.

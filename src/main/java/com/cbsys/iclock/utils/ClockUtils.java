@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.TimeZone;
 
 public class ClockUtils {
@@ -37,16 +36,16 @@ public class ClockUtils {
 		return OffsetDateTime.ofInstant(Instant.ofEpochMilli(utcTime), ZoneOffset.of(tz)).format(Formatter);
 	}
 
-	public static void main(String[] args) {
-
-
-		System.out.println(OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-		//Date time = format.parse("2016-03-02T15:56:57+1300");
-		long t = 1458573700000l;//transToUTC("2016-03-02 15:56:57", 13);
-		System.out.println(t);
-		System.out.println(OffsetDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneOffset.of("+13")).format(Formatter));
-		System.out.println(new Date(t).toInstant().toString());
-		System.out.println(new Date(t).toString());
-		System.out.println("passwd=".split("=").length);
-	}
+	/*	public static void main(String[] args) {
+	
+	
+			System.out.println(OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+			//Date time = format.parse("2016-03-02T15:56:57+1300");
+			long t = 1458573700000l;//transToUTC("2016-03-02 15:56:57", 13);
+			System.out.println(t);
+			System.out.println(OffsetDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneOffset.of("+13")).format(Formatter));
+			System.out.println(new Date(t).toInstant().toString());
+			System.out.println(new Date(t).toString());
+			System.out.println("passwd=".split("=").length);
+		}*/
 }
