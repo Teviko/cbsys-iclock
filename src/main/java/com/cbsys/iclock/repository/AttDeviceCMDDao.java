@@ -19,7 +19,7 @@ public interface AttDeviceCMDDao extends JpaRepository<AttDeviceCMD, Long> {
 	@Query("select max(cmd.cmdSN) from AttDeviceCMD cmd where cmd.cmdSN >0 and  cmd.serialNumber=?1 and  cmd.corpToken=?2")
 	public Long getCMDMaxSNByDevice(String serialNumber, String corpToken);
 
-	@Query("select cmd from AttDeviceCMD cmd where cmd.serialNumber=?1 and  cmd.corpToken=?2 and cmd.flag=?3 and cmd.cmdType=?4 order by cmd.cmdSN desc")
+	@Query("select cmd from AttDeviceCMD cmd where cmd.serialNumber=?1 and  cmd.corpToken=?2 and cmd.flag=?3 and cmd.cmdType=?4 order by cmd.cmdSN desc, cmd.cmdOrder asc")
 	public List<AttDeviceCMD> getCmdsByDeviceAndFlagAndType(String serialNumber, String corpToken, int flag, int cmdType, Pageable pageable);
 
 	@Query("select cmd from AttDeviceCMD cmd where cmd.serialNumber=?1 and  cmd.corpToken=?2 and cmd.flag=?3 and cmd.cmdType in (1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,18,19,20)  order by cmd.cmdOrder asc, cmd.cmdSN asc")

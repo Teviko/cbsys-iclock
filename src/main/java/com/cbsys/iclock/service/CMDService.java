@@ -2,9 +2,14 @@ package com.cbsys.iclock.service;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +18,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.cbsys.iclock.AttendanceConstants;
+import com.cbsys.iclock.attDevice.cmd.AttendanceDeviceCMDUtils;
+import com.cbsys.iclock.attDevice.cmd.CommandParam;
+import com.cbsys.iclock.attDevice.cmd.DeviceCommand;
+import com.cbsys.iclock.domain.AttDevice;
 import com.cbsys.iclock.domain.AttDeviceCMD;
+import com.cbsys.iclock.domain.DeliverStaffTask;
+import com.cbsys.iclock.domain.Staff;
+import com.cbsys.iclock.domain.StaffFacePrint;
+import com.cbsys.iclock.domain.StaffFingerPrint;
 import com.cbsys.iclock.repository.AttDeviceCMDDao;
+import com.cbsys.iclock.repository.AttDeviceDao;
+import com.cbsys.iclock.repository.DeliverStaffTaskDao;
+import com.cbsys.iclock.repository.StaffDao;
+import com.cbsys.iclock.repository.StaffFacePrintDao;
+import com.cbsys.iclock.repository.StaffFingerPrintDao;
 import com.cbsys.iclock.utils.ClockUtils;
+import com.cbsys.iclock.utils.DateUtil;
 import com.cbsys.iclock.utils.LogUtil;
 import com.cbsys.iclock.vo.DeviceInfo;
 
@@ -32,6 +51,16 @@ public class CMDService {
 
 	@Autowired
 	private AttDeviceCMDDao attDeviceCMDDao;
+	@Autowired
+	private AttDeviceDao attDeviceDao;
+	@Autowired
+	private DeliverStaffTaskDao deliverStaffTaskDao;
+	@Autowired
+	private StaffFacePrintDao staffFacePrintDao;
+	@Autowired
+	private StaffFingerPrintDao staffFingerPrintDao;
+	@Autowired
+	private StaffDao staffDao;
 
 	public List<AttDeviceCMD> processGetrequest(DeviceInfo d) {
 		if (d == null)
@@ -128,5 +157,98 @@ public class CMDService {
 		if (d.getDeviceMode() == null || !d.getDeviceMode().equals(deviceName))
 			d.setCmdInfoDeviceMode(deviceName);
 		d.getModified().set(true);
+	}
+
+	public void scanStaffUploadTask() {
+		List<DeliverStaffTask> tasks = deliverStaffTaskDao.findAll();
+		if (tasks == null || tasks.size() == 0)
+			return;
+		Set<String> corpStaff = new HashSet<String>();
+		Map<String, List<AttDevice>> corpDevices = new HashMap<String, List<AttDevice>>();
+		Timestamp curTime = new Timestamp(System.currentTimeMillis());
+		for (DeliverStaffTask task : tasks) {
+			String icon = task.getCorpToken() + ":" + task.getClockId();
+			if (corpStaff.contains(icon)) {
+				deliverStaffTaskDao.delete(task);
+				continue;
+			}
+			List<AttDevice> devices = corpDevices.get(task.getCorpToken());
+			if (devices == null) {
+				devices = attDeviceDao.findByCorpToken(task.getCorpToken());
+				if (devices == null)
+					devices = new ArrayList<AttDevice>();
+				corpDevices.put(task.getCorpToken(), devices);
+			}
+			for (AttDevice device : devices) {
+				if (device.getSerialNumber().equals(task.getFromDevice()))
+					continue;
+				makeDataUserCMD(task.getStaffId(), device, curTime, true);
+			}
+			corpStaff.add(icon);
+			deliverStaffTaskDao.delete(task);
+		}
+
+	}
+
+	private void makeDataUserCMD(Long staffId, AttDevice device, Timestamp cur, boolean needALL) {
+		if (device == null || staffId == null || staffId < 1)
+			return;
+		Staff staff = staffDao.findOne(staffId);
+		CommandParam param = new CommandParam();
+		param.setDeviceSN(device.getSerialNumber());
+		param.setPri(staff.getPri());
+		param.setStaff(staff);
+		DeviceCommand processor = StringUtils.isBlank(staff.getPassword()) ? AttendanceDeviceCMDUtils.getCMDProcessor(AttendanceConstants.TYPE_CMD_DATA_USER)
+				: AttendanceDeviceCMDUtils.getCMDProcessor(AttendanceConstants.TYPE_FOR_USER_PASSWD);
+		AttDeviceCMD cmd = new AttDeviceCMD();
+		cmd.setCmdType(AttendanceConstants.TYPE_CMD_DATA_USER);
+		cmd.setCreateTime(cur);
+		cmd.setUpdateTime(cur);
+		cmd.setCorpToken(device.getCorpToken());
+		cmd.setSerialNumber(device.getSerialNumber());
+		cmd.setCmdOrder(AttendanceConstants.ORDER_USER_COMMON);
+		cmd.setFlag(AttendanceConstants.FLAG_NEW);
+		processor.makeCommand(cmd, param);
+		attDeviceCMDDao.save(cmd);
+		if (!needALL)
+			return;
+
+		List<StaffFingerPrint> fingerPrints = staffFingerPrintDao.findByStaffid(staff.getId());
+		if (fingerPrints != null && fingerPrints.size() > 0) {
+			processor = AttendanceDeviceCMDUtils.getCMDProcessor(AttendanceConstants.TYPE_CMD_DATA_FP);
+			for (StaffFingerPrint fp : fingerPrints) {
+				param.setFp(fp);
+				cmd = new AttDeviceCMD();
+				cmd.setCmdType(AttendanceConstants.TYPE_CMD_DATA_FP);
+				cmd.setCreateTime(cur);
+				cmd.setUpdateTime(cur);
+				cmd.setCorpToken(device.getCorpToken());
+				cmd.setSerialNumber(device.getSerialNumber());
+				cmd.setCmdOrder(AttendanceConstants.ORDER_FP_COMMON);
+				cmd.setFlag(AttendanceConstants.FLAG_NEW);
+				processor.makeCommand(cmd, param);
+				attDeviceCMDDao.save(cmd);
+			}
+		}
+
+		List<StaffFacePrint> facePrints = staffFacePrintDao.findByStaffid(staff.getId());
+		if (facePrints != null && facePrints.size() > 0) {
+			processor = AttendanceDeviceCMDUtils.getCMDProcessor(AttendanceConstants.TYPE_CMD_FACE);
+			long baseCMDSN = Long.parseLong(staff.getPin() + DateUtil.format(cur, "ddHHmmss"));
+			for (StaffFacePrint staffFacePrint : facePrints) {
+				param.setSfp(staffFacePrint);
+				cmd = new AttDeviceCMD();
+				cmd.setCmdType(AttendanceConstants.TYPE_CMD_FACE);
+				cmd.setCreateTime(cur);
+				cmd.setUpdateTime(cur);
+				cmd.setCorpToken(device.getCorpToken());
+				cmd.setSerialNumber(device.getSerialNumber());
+				cmd.setCmdSN(-baseCMDSN);
+				cmd.setCmdOrder(staffFacePrint.getFid());
+				cmd.setFlag(AttendanceConstants.FLAG_NEW);
+				processor.makeCommand(cmd, param);
+				attDeviceCMDDao.save(cmd);
+			}
+		}
 	}
 }

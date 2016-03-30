@@ -26,7 +26,6 @@ public class CommandParam {
 	private String url; //用于PutFile命令
 	private String fileName; //用于PutFile命令
 	private String stamp;
-	private int cardNumber;
 	private String beginTime;
 	private String endTime;
 	private String workCode;
@@ -102,14 +101,6 @@ public class CommandParam {
 
 	public void setShell(String shell) {
 		this.shell = shell;
-	}
-
-	public int getCardNumber() {
-		return cardNumber;
-	}
-
-	public void setCardNumber(int cardNumber) {
-		this.cardNumber = cardNumber;
 	}
 
 	public String getBeginTime() {

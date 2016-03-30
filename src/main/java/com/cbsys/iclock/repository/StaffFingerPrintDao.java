@@ -8,4 +8,6 @@ import com.cbsys.iclock.domain.StaffFingerPrint;
 
 public interface StaffFingerPrintDao extends JpaRepository<StaffFingerPrint, Long> {
 	public List<StaffFingerPrint> findByPinAndFidAndCorpToken(String pin, int fid, String corpToken);
+
+	public List<StaffFingerPrint> findByStaffid(Long staffid);
 }

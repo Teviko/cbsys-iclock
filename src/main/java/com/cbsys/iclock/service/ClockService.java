@@ -22,12 +22,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.cbsys.iclock.AttendanceConstants;
 import com.cbsys.iclock.domain.AttRecord;
+import com.cbsys.iclock.domain.DeliverStaffTask;
 import com.cbsys.iclock.domain.Oplog;
 import com.cbsys.iclock.domain.Staff;
 import com.cbsys.iclock.domain.StaffFacePrint;
 import com.cbsys.iclock.domain.StaffFingerPrint;
 import com.cbsys.iclock.exception.ErrorDataFormatException;
 import com.cbsys.iclock.repository.AttRecordDao;
+import com.cbsys.iclock.repository.DeliverStaffTaskDao;
 import com.cbsys.iclock.repository.OplogDao;
 import com.cbsys.iclock.repository.StaffDao;
 import com.cbsys.iclock.repository.StaffFacePrintDao;
@@ -50,6 +52,9 @@ public class ClockService {
 	private StaffFacePrintDao staffFacePrintDao;
 	@Autowired
 	private OplogDao oplogDao;
+	@Autowired
+	private DeliverStaffTaskDao deliverStaffTaskDao;
+
 	private static final Pattern STAFF_NO_CARD_PATTERN = Pattern.compile("\\[0*\\]");
 	private static final Object v = new Object();
 	private static final Map<String, Object> PROCESSING_ATTRECORDS_DEVICES = new ConcurrentHashMap<String, Object>(64);
@@ -89,6 +94,18 @@ public class ClockService {
 				processFACE(device, tokens, staffMaps, cur);
 			} else if (ui.indexOf(AttendanceConstants.OPSTAM_OPLOG) == 0) {// 上传的是操作日志
 				processOPLOG(device, tokens, cur);
+			}
+		}
+		if (staffMaps.size() > 0) {// when staffinfo was updated, distribute to other devices of cur corpToken
+			for (Entry<String, Staff> entry : staffMaps.entrySet()) {
+				DeliverStaffTask task = new DeliverStaffTask();
+				task.setClockId(entry.getKey());
+				task.setCorpToken(device.getCorpToken());
+				task.setFromDevice(device.getSn());
+				task.setStaffId(entry.getValue().getId());
+				task.setCreateTime(cur);
+				task.setUpdateTime(cur);
+				deliverStaffTaskDao.save(task);
 			}
 		}
 	}

@@ -1,7 +1,9 @@
 package com.cbsys.iclock.utils;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.regex.Pattern;
 
 /**
@@ -57,5 +59,8 @@ public class DateUtil {
 		return zktime;
 	}
 
+	public static String format(Date date, String pattern) {
+		return date == null ? "" : new SimpleDateFormat(pattern).format(date);
+	}
 
 }
