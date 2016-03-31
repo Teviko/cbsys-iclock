@@ -117,7 +117,7 @@ public class ClockService {
 	 * 格式：FACE PIN=1 FID=0 SIZE=372 VALID=1 TMP=xxx
 	 *
 	 * @param tokens
-	 *            0:FACE PIN=xxx 1:FID=xxx 2:Size=xxx 3:Valid=xxx 4:TMP=xxx
+	 *            0:FACE PIN=xxx 1:FID=xxx 2:Size=xxx 3:VALID=xxx 4:TMP=xxx
 	 */
 	public void processFACE(DeviceInfo d, String[] tokens, Map<String, Staff> staffMaps, Timestamp cur) {
 		if (tokens == null || tokens.length != 5) {
@@ -140,6 +140,7 @@ public class ClockService {
 			if (CollectionUtils.isNotEmpty(list))
 				staffFacePrintDao.deleteInBatch(list);
 			StaffFacePrint sfp = new StaffFacePrint();
+			sfp.setPin(attNo);
 			sfp.setFid(fid);
 			sfp.setSize(Integer.parseInt(tokens[2].substring(5)));
 			sfp.setValid(Integer.parseInt(tokens[3].substring(6)));
