@@ -4,7 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "t_saff")
+@Table(name = "t_staff")
 public class Staff extends BaseEntity {
 	private String pin;
 	private String password;

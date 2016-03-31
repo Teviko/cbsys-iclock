@@ -10,6 +10,7 @@ public class DeliverStaffTask extends BaseEntity {
 	private String corpToken;
 	private Long staffId;
 	private String fromDevice;
+	private String toDevice;
 	private int opFlag = 1; //1:新增，2:删除
 
 	public String getClockId() {
@@ -34,6 +35,14 @@ public class DeliverStaffTask extends BaseEntity {
 
 	public void setStaffId(Long staffId) {
 		this.staffId = staffId;
+	}
+
+	public String getToDevice() {
+		return toDevice;
+	}
+
+	public void setToDevice(String toDevice) {
+		this.toDevice = toDevice;
 	}
 
 	public String getFromDevice() {

@@ -165,8 +165,34 @@ public class CMDService {
 			return;
 		Set<String> corpStaff = new HashSet<String>();
 		Map<String, List<AttDevice>> corpDevices = new HashMap<String, List<AttDevice>>();
+		Set<String> toDevices = new HashSet<String>();
 		Timestamp curTime = new Timestamp(System.currentTimeMillis());
 		for (DeliverStaffTask task : tasks) {
+			if (StringUtils.isNotBlank(task.getToDevice())) {// need put all staffs of this company to the device
+				if (!toDevices.contains(task.getToDevice())) {
+					AttDevice device = attDeviceDao.findBySerialNumber(task.getToDevice());
+					if (device != null) {
+						if (task.getStaffId() != null && task.getStaffId() > 0)
+							makeDataUserCMD(task.getStaffId(), device, curTime, true);
+						else if (StringUtils.isNotBlank(task.getClockId())) {
+							List<Staff> s = staffDao.findByPinAndCorpToken(task.getClockId(), task.getCorpToken());
+							if (s == null || s.size() == 0) {
+								logger.error("====Staff Not Exist!! Skip the task======CorpToken:" + task.getCorpToken() + "  clockId:" + task.getClockId());
+								deliverStaffTaskDao.delete(task);
+								continue;
+							}
+							makeDataUserCMD(s.get(0).getId(), device, curTime, true);
+						} else {
+							List<Long> ids = staffDao.getIdsByCorpToken(task.getCorpToken());
+							for (Long id : ids)
+								makeDataUserCMD(id, device, curTime, true);
+						}
+					}
+					toDevices.add(task.getToDevice());
+				}
+				deliverStaffTaskDao.delete(task);
+				continue;
+			}
 			String icon = task.getCorpToken() + ":" + task.getClockId();
 			if (corpStaff.contains(icon)) {
 				deliverStaffTaskDao.delete(task);
