@@ -4,7 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "t_att_devices")
+@Table(name = "t_deliver_staff_task")
 public class DeliverStaffTask extends BaseEntity {
 	private String clockId;
 	private String corpToken;
