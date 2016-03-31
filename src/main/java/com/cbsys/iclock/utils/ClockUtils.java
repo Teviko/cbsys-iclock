@@ -37,13 +37,13 @@ public class ClockUtils {
 			tz = String.valueOf(timeZoneOffset);
 		return OffsetDateTime.ofInstant(Instant.ofEpochMilli(utcTime), ZoneOffset.of(tz)).format(FormatterToTMS);
 	}
-
-	public static void main(String[] args) {
-
-		System.out.println(OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-		//Date time = format.parse("2016-03-02T15:56:57+1300");
-		long t = 1458573700000l;//transToUTC("2016-03-02 15:56:57", 13);
-		System.out.println(t);
-		System.out.println(transToOffsetDatetime(t, 13));
-	}
+	/*
+		public static void main(String[] args) {
+	
+			System.out.println(OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+			//Date time = format.parse("2016-03-02T15:56:57+1300");
+			long t = 1458573700000l;//transToUTC("2016-03-02 15:56:57", 13);
+			System.out.println(t);
+			System.out.println(transToOffsetDatetime(t, 13));
+		}*/
 }
