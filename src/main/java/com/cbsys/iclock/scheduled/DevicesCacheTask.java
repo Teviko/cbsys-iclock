@@ -21,7 +21,7 @@ public class DevicesCacheTask {
 	private static final Log logger = LogFactory.getLog(DevicesCacheTask.class);
 	private final static Object Running = new Object();
 
-	@Scheduled(initialDelay = 1000, fixedDelay = 20000)
+	@Scheduled(initialDelay = 0, fixedDelay = 20000)
 	public void scanDevicesFromDB() {
 		synchronized (Running) {
 			logger.info("======================scan all devices into Cache (Beginning)--------------------");
