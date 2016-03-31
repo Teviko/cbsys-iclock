@@ -86,7 +86,9 @@ public class ClockService {
 		Timestamp cur = new Timestamp(System.currentTimeMillis());
 		for (String ui : userInfos) {
 			String[] tokens = ui.split(AttendanceConstants.RESP_TEXT_T);
-			if (ui.indexOf(AttendanceConstants.OPSTAMP_USER) == 0) {// 上传的是用户信息
+			if (ui.indexOf(AttendanceConstants.OPSTAM_USERPIC) == 0) {// 上传的是用户信息
+				processUserPic(device, tokens, staffMaps, cur, ui);
+			} else if (ui.indexOf(AttendanceConstants.OPSTAMP_USER) == 0) {// 上传的是用户信息
 				processUSER(device, tokens, staffMaps, cur, ui);
 			} else if (ui.indexOf(AttendanceConstants.OPSTAM_FP) == 0) {// 上传的是指纹格式
 				processFP(device, tokens, staffMaps, cur, ui);
@@ -313,6 +315,59 @@ public class ClockService {
 		} catch (Exception e) {
 			logger.error(LogUtil.stackTraceToString(e));
 		}
+	}
+
+	/**
+	 *格式：USERPIC	用户照片
+	 *PIN=911 用户ID
+	 *FileName=911.jpg 为文件名
+	 *Size=65123   表示文件的base64的编码内容的大小
+	 *Content=ssss为照片文件的base64的编码内容
+	 */
+	public void processUserPic(DeviceInfo d, String[] tokens, Map<String, Staff> staffMaps, Timestamp cur, String line) {
+		//TODO
+		/*if (tokens == null || tokens.length != 4) {
+			logger.info("Wrong UserPic Data Format: " + d.getSn() + " $$$$ " + line);
+			throw new ErrorDataFormatException();
+		}
+		String attNo = tokens[0].substring(9);
+		Staff staff = staffMaps.get(attNo);
+		if (staff == null) {
+			List<Staff> staffs = staffDao.findByPinAndCorpToken(attNo, d.getCorpToken());
+			if (CollectionUtils.isNotEmpty(staffs))
+				staff = staffs.get(0);
+			else {
+				staff = new Staff();
+				staff.setCreateTime(cur);
+			}
+			staffMaps.put(attNo, staff);
+		}
+		String fileName = tokens[1].substring(9);
+		int size = Integer.parseInt(tokens[2].substring(5));
+		String pic = tokens[3].substring(8);
+		try {
+			if (pic.length() != size) {
+				logger.info("员工头像大小不正确，员工考勤编号：" + attNo + "；设备序列号：" + deviceSN + " 应该大小：" + size + "；实际大小：" + pic.length());
+				return;
+			}
+			StaffPic p = new StaffPic();
+			p.setSize(size);
+			p.setPic(pic);
+			p.setFileName(fileName);
+			p.setCreateTime(new Timestamp(System.currentTimeMillis()));
+			p.setStaffid(staff.getId());
+			staffPicDao.save(p);
+		
+			log.info(pic);
+			byte[] picBytes = Base64.decodeBase64(pic);
+			File p = new File("/home/albert/rlz/" + fileName);
+			FileOutputStream file = new FileOutputStream(p);
+			file.write(picBytes);
+			file.flush();
+			file.close();
+		} catch (Exception e) {
+			logger.error(LogUtil.stackTraceToString(e));
+		}*/
 	}
 
 	private static final String TMS_URL = "http://114.23.34.60:9090/import/pr?token=";
