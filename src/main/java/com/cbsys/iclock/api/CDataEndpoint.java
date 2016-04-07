@@ -68,7 +68,7 @@ public class CDataEndpoint {
 			throw new ErrorDeviceException();
 		DeviceStatusVO vo = new DeviceStatusVO();
 		vo.setCurTime(new Timestamp(System.currentTimeMillis()));
-		AttDevice device = deviceService.getDeviceBySNForInit(sn, vo);
+		AttDevice device = deviceService.getDeviceBySNForInit(sn, vo, di);
 		if (device == null)
 			throw new ErrorDeviceException();
 		String info = makeDeviceSetting(device);

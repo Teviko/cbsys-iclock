@@ -29,6 +29,8 @@ public class GetRequestEndpoint {
 
 	@Autowired
 	private CMDService cmdService;
+	@Autowired
+	private DeviceService deviceService;
 
 	@RequestMapping(value = "/getrequest", produces = "text/plain")
 	@ResponseBody
@@ -40,6 +42,7 @@ public class GetRequestEndpoint {
 		try {
 			List<AttDeviceCMD> cmds = null;
 			DeviceInfo di = DeviceService.DEVICES.getIfPresent(sn);
+			deviceService.checkTimeZone(di, null, false);
 			if (di == null)
 				throw new ErrorDeviceException();
 			if (di != null) {

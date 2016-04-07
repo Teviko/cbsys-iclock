@@ -43,7 +43,7 @@ public class DeviceService {
 
 	public static final Cache<String, DeviceInfo> DEVICES = CacheBuilder.newBuilder().initialCapacity(200).maximumSize(10000).build();
 
-	public AttDevice getDeviceBySNForInit(String sn, DeviceStatusVO vo) {
+	public AttDevice getDeviceBySNForInit(String sn, DeviceStatusVO vo, DeviceInfo di) {
 		AttDevice device = attDeviceDao.findBySerialNumber(sn);
 		if (device == null)
 			return null;
@@ -51,16 +51,7 @@ public class DeviceService {
 		if (StringUtils.isBlank(device.getDeviceVersion()))
 			needInfoCMD = true;
 		processUpdateDevice(device, vo, null);
-		int tzOffset = ClockUtils.getClockTZOffset(device.getTimeZoneId());
-
-		if (tzOffset >= 0) {
-			if (device.getTimeZoneOffset() != tzOffset) {
-				makeOptionsCMD(device, "TZAdj", String.valueOf(tzOffset)); //set device to local time-zone
-				saveNewCMDWithoutParam(device, AttendanceConstants.TYPE_CMD_REBOOT);
-				device.setTimeZoneOffset(tzOffset);
-			}
-		} else
-			makeOptionsCMD(device, "TZAdj", ""); //set device to server time-zone
+		checkTimeZone(di, device, true);
 		if (needInfoCMD) {
 			try {
 				logger.info("New Device is online.  Fetching Device INFO!");
@@ -70,6 +61,23 @@ public class DeviceService {
 			}
 		}
 		return device;
+	}
+
+	public void checkTimeZone(DeviceInfo di, AttDevice device, boolean needResetOption) {
+		int tzOffset = ClockUtils.getClockTZOffset(di.getTzId());
+		if (tzOffset < 0) {
+			logger.info("Check TimeZone Offset Wrong: " + tzOffset + " tzId: " + di.getTzId());
+			if (needResetOption)
+				makeOptionsCMD(device, "TZAdj", "");
+		}
+		if (di.getTimeZoneOffset() == tzOffset)
+			return;
+		if (device == null)
+			device = attDeviceDao.findBySerialNumber(di.getSn());
+		makeOptionsCMD(device, "TZAdj", String.valueOf(tzOffset)); //set device to local time-zone
+		device.setTimeZoneOffset(tzOffset);
+		di.setTimeZoneOffset(tzOffset);
+		di.setCmds(di.getCmds() + 2);
 	}
 
 	public AttDeviceCMD makeOptionsCMD(AttDevice device, String key, String value) {
