@@ -103,12 +103,13 @@ public class CDataEndpoint {
 					temp.setDeviceSN(sn);
 					temp.setClockId(rd[0]);
 					temp.setCorpToken(device.getCorpToken());
-					temp.setUtcAttTime(ClockUtils.transToUTC(rd[1], device.getTimeZoneOffset()));
+					long[] times = ClockUtils.transToUTC(rd[1], device.getTzId());
+					temp.setUtcAttTime(times[0]);
+					temp.setTimezoneoffset((int) times[1]);
 					temp.setStauts(rd.length >= 3 ? Integer.parseInt(rd[2]) : -1);
 					temp.setVerifyType(rd.length >= 4 ? Integer.parseInt(rd[3]) : -1);
 					temp.setWorkCode(rd.length >= 5 ? rd[4] : "0");
 					temp.setRecordStr(record);
-					temp.setTimezoneoffset(device.getTimeZoneOffset());
 					temp.setCreateTime(new Timestamp(System.currentTimeMillis()));
 					temp.setUpdateTime(temp.getCreateTime());
 					arList.add(temp);

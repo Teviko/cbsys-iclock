@@ -131,7 +131,7 @@ public class AttRecord extends BaseEntity {
 	public String makeSyncMsg() {
 		StringBuilder msg = new StringBuilder(clockId);
 		msg.append(",").append(ClockUtils.transToOffsetDatetime(utcAttTime, timezoneoffset)).append(",");
-		msg.append(stauts).append(",").append(verifyType).append(",").append(workCode);
+		msg.append(stauts).append(",").append(verifyType).append(",0,").append(workCode);
 		return msg.toString();
 	}
 }

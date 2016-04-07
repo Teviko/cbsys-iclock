@@ -24,6 +24,7 @@ import com.cbsys.iclock.domain.AttDevice;
 import com.cbsys.iclock.domain.AttDeviceCMD;
 import com.cbsys.iclock.repository.AttDeviceCMDDao;
 import com.cbsys.iclock.repository.AttDeviceDao;
+import com.cbsys.iclock.utils.ClockUtils;
 import com.cbsys.iclock.utils.LogUtil;
 import com.cbsys.iclock.vo.DeviceInfo;
 import com.cbsys.iclock.vo.DeviceStatusVO;
@@ -50,10 +51,12 @@ public class DeviceService {
 		if (StringUtils.isBlank(device.getDeviceVersion()))
 			needInfoCMD = true;
 		processUpdateDevice(device, vo, null);
+		int tzOffset = ClockUtils.getClockTZOffset(device.getTimeZoneId());
+		if (tzOffset > 0)
+			makeOptionsCMD(device, "TZAdj", String.valueOf(tzOffset)); //set device to local time-zone
 		if (needInfoCMD) {
 			try {
 				logger.info("New Device is online.  Fetching Device INFO!");
-				makeOptionsCMD(device, "TZAdj", String.valueOf(device.getTimeZoneOffset())); //set device to local time-zone
 				saveNewCMDWithoutParam(device, AttendanceConstants.TYPE_CMD_INFO); //fetch device info
 			} catch (Exception e) {
 				logger.error(LogUtil.stackTraceToString(e));
@@ -125,7 +128,7 @@ public class DeviceService {
 			cmdCounts.put(cmd[0].toString(), new Long(cmd[1].toString()));
 		}
 		for (Object[] obj : devices) {
-			if (obj == null || obj.length != 8)
+			if (obj == null || obj.length != 9)
 				continue;
 			DeviceInfo d = new DeviceInfo(obj);
 			sn.remove(d.getSn());

@@ -14,6 +14,7 @@ public class DeviceInfo {
 	private long cmds;
 	private int offsiteAtt;
 	private int timeZoneOffset;
+	private String tzId;
 	private String cmdInfoDeviceMode;
 	private AtomicReference<String> stamp = new AtomicReference<String>(null);;
 	private AtomicReference<String> opStamp = new AtomicReference<String>(null);;
@@ -36,6 +37,15 @@ public class DeviceInfo {
 		this.deviceType = Integer.parseInt(fromDB[5].toString());
 		this.corpToken = fromDB[6].toString();
 		this.timeZoneOffset = Integer.parseInt(fromDB[7].toString());
+		this.tzId = fromDB[8].toString();
+	}
+
+	public String getTzId() {
+		return tzId;
+	}
+
+	public void setTzId(String tzId) {
+		this.tzId = tzId;
 	}
 
 	public String getCorpToken() {

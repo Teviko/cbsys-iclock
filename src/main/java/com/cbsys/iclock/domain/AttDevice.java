@@ -32,6 +32,7 @@ public class AttDevice extends BaseEntity {
 	private int realtime;
 	private int timeZoneOffset;
 	private String timeZone;
+	private String timeZoneId;
 	private String autoPowerontime;
 	private String autoPowerofftime;
 	private String faceAlgorithmVersion;
@@ -331,6 +332,14 @@ public class AttDevice extends BaseEntity {
 
 	public void setComments(String comments) {
 		this.comments = comments;
+	}
+
+	public String getTimeZoneId() {
+		return timeZoneId;
+	}
+
+	public void setTimeZoneId(String timeZoneId) {
+		this.timeZoneId = timeZoneId;
 	}
 
 }
