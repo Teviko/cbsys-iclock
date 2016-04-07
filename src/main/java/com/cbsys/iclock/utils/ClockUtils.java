@@ -21,10 +21,10 @@ public class ClockUtils {
 
 	public static int getClockTZOffset(String tzId) {
 		if (StringUtils.isBlank(tzId))
-			return 0;
-		ZoneId systemTZ = ZoneId.systemDefault();
+			return -1;
+		/*ZoneId systemTZ = ZoneId.systemDefault();
 		if (systemTZ.getId().equals(tzId))
-			return 0;
+			return 0;*/
 		ZoneRules zr = ZoneId.of(tzId).getRules();
 		int offsetHours = zr.getOffset(Instant.now()).getTotalSeconds() / 3600;
 		return offsetHours;

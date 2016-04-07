@@ -52,8 +52,15 @@ public class DeviceService {
 			needInfoCMD = true;
 		processUpdateDevice(device, vo, null);
 		int tzOffset = ClockUtils.getClockTZOffset(device.getTimeZoneId());
-		if (tzOffset > 0)
-			makeOptionsCMD(device, "TZAdj", String.valueOf(tzOffset)); //set device to local time-zone
+
+		if (tzOffset >= 0) {
+			if (device.getTimeZoneOffset() != tzOffset) {
+				makeOptionsCMD(device, "TZAdj", String.valueOf(tzOffset)); //set device to local time-zone
+				saveNewCMDWithoutParam(device, AttendanceConstants.TYPE_CMD_REBOOT);
+				device.setTimeZoneOffset(tzOffset);
+			}
+		} else
+			makeOptionsCMD(device, "TZAdj", ""); //set device to server time-zone
 		if (needInfoCMD) {
 			try {
 				logger.info("New Device is online.  Fetching Device INFO!");
