@@ -45,6 +45,7 @@ public class AttDevice extends BaseEntity {
 	private String imei;
 	private int offsiteAtt = 0;
 	private String comments;
+	private String defaultWorkCode;
 
 	public String getSerialNumber() {
 		return serialNumber;
@@ -340,6 +341,14 @@ public class AttDevice extends BaseEntity {
 
 	public void setTimeZoneId(String timeZoneId) {
 		this.timeZoneId = timeZoneId;
+	}
+
+	public String getDefaultWorkCode() {
+		return defaultWorkCode;
+	}
+
+	public void setDefaultWorkCode(String defaultWorkCode) {
+		this.defaultWorkCode = defaultWorkCode;
 	}
 
 }

@@ -16,6 +16,7 @@ public class DeviceInfo {
 	private int timeZoneOffset;
 	private String tzId;
 	private String cmdInfoDeviceMode;
+	private String defaultWorkCode;
 	private AtomicReference<String> stamp = new AtomicReference<String>(null);;
 	private AtomicReference<String> opStamp = new AtomicReference<String>(null);;
 	private AtomicReference<String> photoStamp = new AtomicReference<String>(null);;
@@ -38,6 +39,15 @@ public class DeviceInfo {
 		this.corpToken = fromDB[6].toString();
 		this.timeZoneOffset = Integer.parseInt(fromDB[7].toString());
 		this.tzId = fromDB[8].toString();
+		this.defaultWorkCode = fromDB[9] == null ? null : fromDB[9].toString();
+	}
+
+	public String getDefaultWorkCode() {
+		return defaultWorkCode;
+	}
+
+	public void setDefaultWorkCode(String defaultWorkCode) {
+		this.defaultWorkCode = defaultWorkCode;
 	}
 
 	public String getTzId() {
