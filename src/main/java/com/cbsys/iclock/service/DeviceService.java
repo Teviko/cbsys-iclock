@@ -143,7 +143,7 @@ public class DeviceService {
 			cmdCounts.put(cmd[0].toString(), new Long(cmd[1].toString()));
 		}
 		for (Object[] obj : devices) {
-			if (obj == null || obj.length != 9)
+			if (obj == null || obj.length != 10)
 				continue;
 			DeviceInfo d = new DeviceInfo(obj);
 			sn.remove(d.getSn());
