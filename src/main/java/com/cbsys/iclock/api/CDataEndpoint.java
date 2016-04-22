@@ -84,7 +84,8 @@ public class CDataEndpoint {
 		HttpUtils.loggerRequest(logger);
 		if (StringUtils.isEmpty(body)) {
 			logger.error(sn + " Failed to read HTTP message:  Could not read document: null!!!!");
-			throw new ErrorParamsException();
+			logger.info("!!OUT-----" + sn + "-----begin Time：" + begin.toString() + "。退出/iclock/cdata的doPost");
+			return "OK";
 		}
 
 		logger.info(body);
