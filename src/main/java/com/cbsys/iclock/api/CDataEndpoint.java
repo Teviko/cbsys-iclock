@@ -75,12 +75,18 @@ public class CDataEndpoint {
 	}
 
 	@RequestMapping(value = "/cdata", method = RequestMethod.POST)
-	public String updateData(@RequestBody String body, @RequestParam("SN") String sn, @RequestParam(value = "table", required = false) String table,
+	public String updateData(@RequestBody(required = false) String body, @RequestParam("SN") String sn,
+			@RequestParam(value = "table", required = false) String table,
 			@RequestParam(value = "OpStamp", required = false) String opStamp, @RequestParam(value = "Stamp", required = false) String stamp) {
 		Timestamp begin = new Timestamp(System.currentTimeMillis());
 		String ts = (opStamp == null) ? stamp : opStamp;
 		logger.info("/iclock/cdata POST:" + sn + "  table:" + table + "  Stamp:" + ts);
 		HttpUtils.loggerRequest(logger);
+		if (StringUtils.isEmpty(body)) {
+			logger.error(sn + " Failed to read HTTP message:  Could not read document: null!!!!");
+			throw new ErrorParamsException();
+		}
+
 		logger.info(body);
 		DeviceInfo device = StringUtils.isBlank(sn) ? null : DeviceService.DEVICES.getIfPresent(sn);
 		if (device == null)
@@ -94,7 +100,7 @@ public class CDataEndpoint {
 				else if (stamp != null)
 					table = "ATTLOG";
 				else
-					throw new ErrorDeviceException();
+					throw new ErrorParamsException();
 			}
 			switch (table.toUpperCase()) {
 			case "ATTLOG":
