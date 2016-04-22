@@ -32,7 +32,7 @@ public class GetRequestEndpoint {
 	@Autowired
 	private DeviceService deviceService;
 
-	@RequestMapping(value = "/getrequest", produces = "text/plain")
+	@RequestMapping(value = "/getrequest")
 	@ResponseBody
 	public String processGetReq(@RequestParam("SN") String sn, @RequestParam(value = "INFO", required = false) String info) {
 		long start = System.currentTimeMillis();

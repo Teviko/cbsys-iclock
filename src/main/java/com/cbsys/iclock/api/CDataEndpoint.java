@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cbsys.iclock.domain.AttDevice;
@@ -55,10 +54,9 @@ public class CDataEndpoint {
 	@Autowired
 	private ClockService clockService;
 
-	@RequestMapping(value = "/cdata", method = RequestMethod.GET, produces = "text/plain")
-	@ResponseBody
+	@RequestMapping(value = "/cdata", method = RequestMethod.GET)
 	public String pushDeviceConfigure(@RequestParam("SN") String sn, @RequestParam(value = "options") String options,
-			@RequestParam(value = "pushver") String pushver, @RequestParam(value = "language") String language) {
+			@RequestParam(value = "pushver", required = false) String pushver, @RequestParam(value = "language", required = false) String language) {
 		logger.info("/iclock/cdata GET:" + sn + "  options:" + options);
 		HttpUtils.loggerRequest(logger);
 		if (!"all".equalsIgnoreCase(options))
@@ -76,8 +74,7 @@ public class CDataEndpoint {
 		return info;
 	}
 
-	@RequestMapping(value = "/cdata", method = RequestMethod.POST, produces = "text/plain")
-	@ResponseBody
+	@RequestMapping(value = "/cdata", method = RequestMethod.POST)
 	public String updateData(@RequestBody String body, @RequestParam("SN") String sn, @RequestParam(value = "table") String table,
 			@RequestParam(value = "OpStamp", required = false) String opStamp, @RequestParam(value = "Stamp", required = false) String stamp) {
 		Timestamp begin = new Timestamp(System.currentTimeMillis());

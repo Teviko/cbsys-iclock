@@ -26,7 +26,7 @@ public class DeviceCMDEndpoint {
 	@Autowired
 	private CMDService cmdService;
 
-	@RequestMapping(value = "/devicecmd", method = RequestMethod.POST, produces = "text/plain")
+	@RequestMapping(value = "/devicecmd", method = RequestMethod.POST)
 	@ResponseBody
 	public String doPost(@RequestBody String body, @RequestParam("SN") String sn) {
 		Timestamp begin = new Timestamp(System.currentTimeMillis());
