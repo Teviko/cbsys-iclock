@@ -42,18 +42,16 @@ public class GetRequestEndpoint {
 		try {
 			List<AttDeviceCMD> cmds = null;
 			DeviceInfo di = DeviceService.DEVICES.getIfPresent(sn);
-			deviceService.checkTimeZone(di, null, false);
 			if (di == null)
 				throw new ErrorDeviceException();
-			if (di != null) {
-				if (info != null)
-					di.setInfo(info);
-				di.setLastOnlineTime(ClockUtils.getLastOnlineTime());
-				di.getModified().set(true);
-				if (di.getCmds() > 0) {
-					logger.info(sn + "total ：" + di.getCmds());
-					cmds = cmdService.processGetrequest(di);
-				}
+			deviceService.checkTimeZone(di, null, false);
+			if (info != null)
+				di.setInfo(info);
+			di.setLastOnlineTime(ClockUtils.getLastOnlineTime());
+			di.getModified().set(true);
+			if (di.getCmds() > 0) {
+				logger.info(sn + "total ：" + di.getCmds());
+				cmds = cmdService.processGetrequest(di);
 			}
 			logger.info("-----ATT Device: " + sn + " fetched commands time：" + (System.currentTimeMillis() - start));
 			if (CollectionUtils.isNotEmpty(cmds)) {

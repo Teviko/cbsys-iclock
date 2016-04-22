@@ -85,7 +85,7 @@ public class ClockService {
 		Map<String, Staff> staffMaps = new HashMap<String, Staff>();
 		Timestamp cur = new Timestamp(System.currentTimeMillis());
 		for (String ui : userInfos) {
-			String[] tokens = ui.split(AttendanceConstants.RESP_TEXT_T);
+			String[] tokens = ui.replaceAll("\t\t", AttendanceConstants.RESP_TEXT_T).split(AttendanceConstants.RESP_TEXT_T);
 			if (ui.indexOf(AttendanceConstants.OPSTAM_USERPIC) == 0) {// 上传的是用户信息
 				processUserPic(device, tokens, staffMaps, cur, ui);
 			} else if (ui.indexOf(AttendanceConstants.OPSTAMP_USER) == 0) {// 上传的是用户信息
@@ -222,6 +222,7 @@ public class ClockService {
 	 */
 	public void processUSER(DeviceInfo d, String[] tokens, Map<String, Staff> staffMaps, Timestamp cur, String line) throws ErrorDataFormatException {
 		if (tokens == null || tokens.length != 7) {
+			logger.info(StringUtils.join(tokens, "||"));
 			logger.info("Wrong UserInfo Data Format: " + d.getSn() + " $$$$ " + line);
 			throw new ErrorDataFormatException();
 		}

@@ -75,7 +75,7 @@ public class CDataEndpoint {
 	}
 
 	@RequestMapping(value = "/cdata", method = RequestMethod.POST)
-	public String updateData(@RequestBody String body, @RequestParam("SN") String sn, @RequestParam(value = "table") String table,
+	public String updateData(@RequestBody String body, @RequestParam("SN") String sn, @RequestParam(value = "table", required = false) String table,
 			@RequestParam(value = "OpStamp", required = false) String opStamp, @RequestParam(value = "Stamp", required = false) String stamp) {
 		Timestamp begin = new Timestamp(System.currentTimeMillis());
 		String ts = (opStamp == null) ? stamp : opStamp;
@@ -88,6 +88,14 @@ public class CDataEndpoint {
 		try {
 			Set<String> userInfos = new HashSet<String>();
 			List<AttRecord> arList = new ArrayList<AttRecord>();
+			if (table == null) {
+				if (opStamp != null)
+					table = "OPERLOG";
+				else if (stamp != null)
+					table = "ATTLOG";
+				else
+					throw new ErrorDeviceException();
+			}
 			switch (table.toUpperCase()) {
 			case "ATTLOG":
 				String[] lines = body.split(RESP_TEXT_N);
