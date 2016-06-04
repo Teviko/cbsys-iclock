@@ -380,9 +380,6 @@ public class ClockService {
 			return;
 		Map<String, StringBuilder> syncMaps = new HashMap<String, StringBuilder>();
 		for (AttRecord ar : attRecords) {
-			ar.setSyncFlag(1);
-			ar.setUpdateTime(new Timestamp(System.currentTimeMillis()));
-			attRecordDao.save(ar);
 			StringBuilder msg = syncMaps.get(ar.getCorpToken());
 			if (msg == null) {
 				msg = new StringBuilder();
@@ -401,6 +398,22 @@ public class ClockService {
 			if (code != 200)
 				throw new IOException();
 		}
+
+		for (AttRecord ar : attRecords) {
+			ar.setSyncFlag(1);
+			ar.setUpdateTime(new Timestamp(System.currentTimeMillis()));
+			attRecordDao.save(ar);
+		}
 	}
 
+	public static void main(String[] args) {
+		try {
+			System.out.println(Request.Post(TMS_URL + 123456).bodyString("420,2016-06-01T00:00:01+1200,1,1,0", ContentType.TEXT_PLAIN).execute()
+					.returnResponse().getCode());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
 }
