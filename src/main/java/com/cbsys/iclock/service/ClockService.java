@@ -81,7 +81,7 @@ public class ClockService {
 		}
 	}
 
-	public void processUserInfos(DeviceInfo device, Collection<String> userInfos) throws ErrorDataFormatException {
+	public void processUserInfos(DeviceInfo device, List<String> userInfos) throws ErrorDataFormatException {
 		Map<String, Staff> staffMaps = new HashMap<String, Staff>();
 		Timestamp cur = new Timestamp(System.currentTimeMillis());
 		for (String ui : userInfos) {

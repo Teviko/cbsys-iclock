@@ -19,9 +19,7 @@ import static com.cbsys.iclock.AttendanceConstants.RESP_TEXT_T;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -93,7 +91,7 @@ public class CDataEndpoint {
 		if (device == null)
 			throw new ErrorDeviceException();
 		try {
-			Set<String> userInfos = new HashSet<String>();
+			List<String> userInfos = new ArrayList<String>();
 			List<AttRecord> arList = new ArrayList<AttRecord>();
 			if (table == null) {
 				if (opStamp != null)
