@@ -15,7 +15,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.entity.ContentType;
+import org.apache.hc.core5.http.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -374,7 +377,7 @@ public class ClockService {
 
 	private static final String TMS_URL = "http://114.23.34.60:9090/import/pr?token=";
 
-	public void syncAttRecords() throws IOException {
+	public void syncAttRecords() throws IOException, ParseException {
 		List<AttRecord> attRecords = attRecordDao.findTop100BySyncFlag(0);
 		if (CollectionUtils.isEmpty(attRecords))
 			return;
@@ -393,9 +396,12 @@ public class ClockService {
 		for (Entry<String, StringBuilder> entry : syncMaps.entrySet()) {
 			String msg = entry.getValue().toString();
 			logger.info("CorpToken: " + entry.getKey() + "=====records: " + msg);
-			int code = Request.Post(TMS_URL + entry.getKey()).bodyString(msg, ContentType.TEXT_PLAIN).execute().returnResponse().getCode();
+			HttpResponse resp =  Request.Post(TMS_URL + entry.getKey()).bodyString(msg, ContentType.TEXT_PLAIN).execute().returnResponse();
+			String result = EntityUtils.toString(resp.getEntity());
+			logger.info("HTTP Response: " + result);
+			int code = resp.getCode();
 			logger.info("HTTP Response Code: " + code);
-			if (code != 200)
+			if (code != 200 || !"200".equals(result))
 				throw new IOException();
 		}
 
