@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
@@ -392,7 +394,7 @@ public class ClockService {
 			}
 			msg.append("\n").append(ar.makeSyncMsg());
 		}
-
+		Set<String> errorCorpToken =  new HashSet<String>();
 		for (Entry<String, StringBuilder> entry : syncMaps.entrySet()) {
 			String msg = entry.getValue().toString();
 			logger.info("CorpToken: " + entry.getKey() + "=====records: " + msg);
@@ -401,11 +403,15 @@ public class ClockService {
 			logger.info("HTTP Response: " + result);
 			int code = resp.getCode();
 			logger.info("HTTP Response Code: " + code);
-			if (code != 200 || !"200".equals(result))
-				throw new IOException();
+			if (code != 200 || !"200".equals(result)){
+				logger.error(entry.getKey() + "sync failed.... these records will retry.");
+				errorCorpToken.add(entry.getKey());
+			}
 		}
 
 		for (AttRecord ar : attRecords) {
+			if (errorCorpToken.contains(ar.getCorpToken()))
+					continue;
 			ar.setSyncFlag(1);
 			ar.setUpdateTime(new Timestamp(System.currentTimeMillis()));
 			attRecordDao.save(ar);
