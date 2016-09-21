@@ -377,8 +377,9 @@ public class ClockService {
 		}*/
 	}
 
-	private static final String TMS_URL = "http://114.23.34.60:9090/import/pr?token=";
+	private static final String TMS_URL = "http://45.32.242.201:9090/import/pr?token=";
 
+	//114.23.34.60
 	public void syncAttRecords() throws IOException, ParseException {
 		List<AttRecord> attRecords = attRecordDao.findTop100BySyncFlag(0);
 		if (CollectionUtils.isEmpty(attRecords))
