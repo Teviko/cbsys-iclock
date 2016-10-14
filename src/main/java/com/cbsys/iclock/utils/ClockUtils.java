@@ -7,7 +7,6 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.zone.ZoneRules;
-import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -16,7 +15,8 @@ public class ClockUtils {
 	private static DateTimeFormatter FormatterToTMS = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
 	public static long getLastOnlineTime() {
-		return LocalDateTime.now().withNano(0).toEpochSecond(ZoneOffset.ofTotalSeconds(TimeZone.getDefault().getRawOffset() / 1000)) * 1000;
+		//return LocalDateTime.now().withNano(0).toEpochSecond(ZoneOffset.ofTotalSeconds(TimeZone.getDefault().getRawOffset() / 1000)) * 1000;
+		return System.currentTimeMillis();
 	}
 
 	public static int getClockTZOffset(String tzId) {
