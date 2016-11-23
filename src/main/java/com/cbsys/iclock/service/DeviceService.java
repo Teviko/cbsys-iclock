@@ -152,7 +152,8 @@ public class DeviceService {
 			if (di == null) {
 				d.setLastOnlineTime(d.getDbLastOnlineTime());
 				DEVICES.put(d.getSn(), d);
-				logger.info("put a device into CACHE：" + d.getSn());
+				logger.info("put a device into CACHE：" + d.getSn()
+						+ (StringUtils.isNotBlank(d.getDefaultWorkCode()) ? ("        default_work_code: " + d.getDefaultWorkCode()) : ""));
 				continue;
 			}
 			di.setOffsiteAtt(d.getOffsiteAtt());

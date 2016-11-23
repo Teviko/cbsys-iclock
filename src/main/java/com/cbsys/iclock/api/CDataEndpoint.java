@@ -119,8 +119,10 @@ public class CDataEndpoint {
 					temp.setStauts(rd.length >= 3 ? Integer.parseInt(rd[2]) : -1);
 					temp.setVerifyType(rd.length >= 4 ? Integer.parseInt(rd[3]) : -1);
 					temp.setWorkCode(rd.length >= 5 ? rd[4] : "0");
-					if ("0".equals(temp.getWorkCode()) && StringUtils.isNotBlank(device.getDefaultWorkCode()))
+					if ("0".equals(temp.getWorkCode()) && StringUtils.isNotBlank(device.getDefaultWorkCode())) {
 						temp.setWorkCode(device.getDefaultWorkCode());
+						logger.info("setting default_work_code for ar : " + device.getDefaultWorkCode());
+					}
 					temp.setRecordStr(record);
 					temp.setCreateTime(new Timestamp(System.currentTimeMillis()));
 					temp.setUpdateTime(temp.getCreateTime());
