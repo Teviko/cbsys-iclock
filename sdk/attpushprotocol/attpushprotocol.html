@@ -1,0 +1,1411 @@
+<html>
+  <head>
+	  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>attpushprotocol</title>
+		<link href="toc/style/github-bf51422f4bb36427d391e4b75a1daa083c2d840e.css" media="all" rel="stylesheet" type="text/css"/>
+		<link href="toc/style/github2-d731afd4f624c99a4b19ad69f3083cd6d02b81d5.css" media="all" rel="stylesheet" type="text/css"/>
+		<link href="toc/css/zTreeStyle/zTreeStyle.css" media="all" rel="stylesheet" type="text/css"/>
+	  <style>
+		pre {
+		    counter-reset: line-numbering;
+		    border: solid 1px #d9d9d9;
+		    border-radius: 0;
+		    background: #fff;
+		    padding: 0;
+		    line-height: 23px;
+		    margin-bottom: 30px;
+		    white-space: pre;
+		    overflow-x: auto;
+		    word-break: inherit;
+		    word-wrap: inherit;
+		}
+
+		pre a::before {
+		  content: counter(line-numbering);
+		  counter-increment: line-numbering;
+		  padding-right: 1em; /* space after numbers */
+		  width: 25px;
+		  text-align: right;
+		  opacity: 0.7;
+		  display: inline-block;
+		  color: #aaa;
+		  background: #eee;
+		  margin-right: 16px;
+		  padding: 2px 10px;
+		  font-size: 13px;
+		  -webkit-touch-callout: none;
+		  -webkit-user-select: none;
+		  -khtml-user-select: none;
+		  -moz-user-select: none;
+		  -ms-user-select: none;
+		  user-select: none;
+		}
+
+		pre a:first-of-type::before {
+		  padding-top: 10px;
+		}
+
+		pre a:last-of-type::before {
+		  padding-bottom: 10px;
+		}
+
+		pre a:only-of-type::before {
+		  padding: 10px;
+		}
+
+		.highlight { background-color: #ffffcc } /* RIGHT */
+		</style>
+  </head>
+  <body>
+	  <div>
+				<div style='width:25%;'>
+						<ul id="tree" class="ztree" style='width:100%'>
+
+						</ul>
+				</div>
+        <div id='readme' style='width:70%;margin-left:20%;'>
+          	<article class='markdown-body'>
+            	<p>考勤Push协议文档</p>
+<blockquote>
+<p>author: xsen</p>
+<p>date: 2015-08-12</p>
+</blockquote>
+<hr>
+<p><span id="summary" /></p>
+<h1 id="-">摘要</h1>
+<p>Push协议是基于超文本传输协议（HTTP）的基础上定义的数据协议，建立在TCP/IP连接上，主要应用于中控考勤、门禁等设备与服务器的数据交互，定义了数据（用户信息、生物识别模板、考勤记录等）的传输格式、控制设备的命令格式；目前中控支持的服务器有<a href="http://113.108.97.187:8081/">WDMS</a>、<a href="http://218.107.201.35:8090">ZKECO</a>、<a href="http://211.100.28.201:8500">ZKNET</a>、<a href="http://110.86.5.250:8088/">ZKBioSecurity3.0</a>等，第三方支持的服务器有<a href="http://115.119.206.89/iclock/">印度ESSL</a>等</p>
+<h2 id="-">特点</h2>
+<ul>
+<li>新数据主动上传</li>
+<li>断点续传</li>
+<li>所有行为都由客户端发起，比如<a href="#uploaddata">上传数据</a>、<a href="#downloadcmd">服务器下发的命令</a>等</li>
+</ul>
+<h2 id="http-">HTTP协议简介</h2>
+<p>Push协议是基于HTTP协议的基础上定义的数据协议，这里简单介绍下什么是HTTP协议，如果已经熟悉可跳过此部分。</p>
+<p>HTTP协议是一种请求/响应型的协议。客户端给服务器发送请求的格式是一个请求方法（request method），URI，协议版本号，然后紧接着一个包含请求修饰符（modifiers），客户端信息，和可能的消息主体的类MIME（MIME-like）消息。服务器对请求端发送响应的格式是以一个状态行（status line），其后跟随一个包含服务器信息、实体元信息和可能的实体主体内容的类MIME（MIME-like）的消息。其中状态行（status line）包含消息的协议版本号和一个成功或错误码。如下例子</p>
+<pre><code>客户端请求：
+GET http://113.108.97.187:8081/iclock/accounts/login/?next=/iclock/data/iclock/ HTTP/1.1
+User-Agent: Fiddler
+Host: 113.108.97.187:8081
+
+服务器响应：
+HTTP/1.1 200 OK
+Server: nginx/0.8.12
+Date: Fri, 10 Jul 2015 03:53:16 GMT
+Content-Type: text/html; charset=utf-8
+Transfer-Encoding: chunked
+Connection: close
+Content-Language: en
+Expires: Fri, 10 Jul 2015 03:53:16 GMT
+Vary: Cookie, Accept-Language
+Last-Modified: Fri, 10 Jul 2015 03:53:16 GMT
+ETag: &quot;c487be9e924810a8c2e293dd7f5b0ab4&quot;
+Pragma: no-cache
+Cache-Control: no-store
+Set-Cookie: csrftoken=60fb55cedf203c197765688ca2d7bf9e; Max-Age=31449600; Path=/
+Set-Cookie: sessionid=06d37fdc8f36490c701af2253af79f4a; Path=/
+
+0
+</code></pre><p>HTTP通信通常发生在TCP/IP连接上。默认端口是TCP 80，不过其它端口也可以使用。但并不排除HTTP协议会在其它协议之上被实现。HTTP仅仅期望的是一个可靠的传输（译注：HTTP一般建立在传输层协议之上）；所以任何提供这种保证的协议都可以被使用</p>
+<h1 id="-">定义</h1>
+<p>文档中引用定义使用格式为：${ServerIP}</p>
+<ul>
+<li>ServerIP：服务器IP地址</li>
+<li>ServerPort：服务器端口</li>
+<li>XXX：未知值</li>
+<li>Value1\Value2\Value3……\Valuen：值1\值2\值3……值n</li>
+<li>Required：必须存在</li>
+<li>Optional：可选</li>
+<li>SerialNumber：系列号</li>
+<li>NUL：null（\0）</li>
+<li>SP：空格</li>
+<li>LF：换行符（\n）</li>
+<li>HT：制表符（\t）</li>
+<li>DataRecord：数据记录</li>
+<li>CmdRecord：命令记录</li>
+<li>CmdID：命令编号</li>
+<li>CmdDesc：命令描述</li>
+<li>Pin：工号</li>
+<li>Time：考勤时间</li>
+<li>Status：考勤状态</li>
+<li>Verify：验证方式</li>
+<li>Workcode：workcode编码</li>
+<li>Reserved：预留字段</li>
+<li>OpType：操作类型</li>
+<li>OpWho：操作者</li>
+<li>OpTime：操作时间</li>
+<li>BinaryData：二进制数据流</li>
+<li>TableName：数据表名</li>
+<li>SystemCmd：系统命令</li>
+<li>Key：键</li>
+<li>Value：值</li>
+<li>FilePath：文件路径</li>
+<li>URL：资源位置</li>
+</ul>
+<h1 id="-">功能</h1>
+<p>从客户端的角度来描述Push协议支持的功能</p>
+<ul>
+<li><a href="#initinfo">初始化信息交互</a></li>
+<li><a href="#uploadinfo">上传更新信息</a></li>
+<li><a href="#uploaddata">上传数据</a></li>
+<li><a href="#downloadcmd">获取命令</a></li>
+<li><a href="#replycmd">回复命令</a></li>
+<li><a href="#remoteatt">异地考勤</a></li>
+<li><a href="#authverify">后台验证</a></li>
+</ul>
+<h1 id="-">流程</h1>
+<p>使用Push协议的客户端和服务器，必须由客户端先发起“初始化信息交互”请求成功之后，才能使用其他功能，比如上传数据、获取服务器命令、上传更新信息、回复服务器命令等，其中这些功能并没有先后顺序，取决于客户端应用程序的开发，如下图</p>
+<p><img src="image/att.pushprotocol.jpg" /></p>
+<p><span id='initinfo' /></p>
+<h1 id="-">初始化信息交互</h1>
+<p>客户端发起请求，将相应的配置信息发送给服务器，服务器接收到该请求，将相应的配置信息回复给客户端，只有当客户端获取到相应的配置信息，才能算交互成功；配置信息交互是按照规定好的格式进行的，具体如下</p>
+<p>客户端请求消息</p>
+<pre><code>GET /iclock/cdata?SN=${SerialNumber}&amp;options=all&amp;pushver=${XXX}&amp;language=${XXX}&amp;pushcommkey=${XXX} HTTP/1.1
+Host: ${ServerIP}:${ServerPort}
+……
+</code></pre><p>注释：</p>
+<pre><code>HTTP请求方法使用：GET方法
+URI使用：/iclock/cdata
+HTTP协议版本使用：1.1
+客户端配置信息：
+    SN：${Required}表示客户端的序列号
+    options：${Required}表示获取服务器配置参数，目前值只有all
+    pushver：${Optional}表示push协议的版本，新开发的客户端最好支持
+    language：${Optional}表示客户端支持的语言，新开发的客户端最好支持，服务端可通过该参数知道目前设备是什么语言
+                        值            意义
+                        83            简体中文
+                        69            英文
+                        97            西班牙语
+                        70            法语
+                        66            阿拉伯语
+                        80            葡萄牙语
+                        82            俄语
+                        71            德语
+                        65            波斯语
+                        76            泰语
+                        73            印尼语
+                        74            日本语
+                        75            韩语
+                        86            越南语
+                        116            土耳其语
+                        72            希伯来语
+                        90            捷克语
+                        68            荷兰语
+                        105            意大利语
+                        89            斯洛伐克语
+                        103            希腊语
+                        112            波兰语
+                        84            繁体
+    pushcommkey：${Optional}表示客户端与服务器绑定的密文信息，软件通过此密文限制设备是否经过授权，不同设备值一般是不一样的，该参数需要服务器支持之后，客户端才需支持
+Host头域：${Required}
+其他头域：${Optional}
+</code></pre><p>服务器正常响应消息</p>
+<pre><code>HTTP/1.1 200 OK
+Date: ${XXX}
+Content-Length: ${XXX}
+……
+
+GET OPTION FROM: ${SerialNumber}${LF}Stamp=${XXX}${LF}OpStamp=${XXX}${LF}PhotoStamp=${XXX}${LF}ErrorDelay=${XXX}${LF}Delay=${XXX}${LF}TransTimes=${XXX}${LF}TransInterval=${XXX}${LF}TransFlag=${XXX}${LF}TimeZone=${XXX}${LF}Realtime=${XXX}${LF}Encrypt=${XXX}${LF}${XXX}Stamp=${XXX}
+</code></pre><p>注释：</p>
+<pre><code>HTTP状态行：使用标准的HTTP协议定义
+HTTP响应头域：
+    Date头域：${Required}使用该头域来同步服务器时间，并且时间格式使用GMT格式，如Date: Fri, 03 Jul 2015 06:53:01 GMT
+    Content-Length头域：根据HTTP 1.1协议，一般使用该头域指定响应实体的数据长度，如果是在不确定响应实体的大小时，也支持Transfer-Encoding: chunked，Content-Length及Transfer-Encoding头域均是HTTP协议的标准定义，这里就不在详述
+服务器端配置信息：
+    第1行必须为该描述：GET OPTION FROM: ${SerialNumber}并且使用${LF}间隔配置信息，
+    其中${SerialNumber}为客户端发起请求的系列号，配置信息是使用键值对的形式（key=value）并且不同配置之间使用${LF}间隔
+    Stamp：客户端最后上传考勤记录的最新记录时间戳标记，客户端在上传考勤记录的时候会同时发送该标记，具体详见“上传数据”功能，服务器需要记录该值
+    OpStamp：客户端最后上传人员数据的最新操作记录时间戳标记，客户端在上传用户\指纹等有关人员数据的时候会同时发送该标记，具体详见“上传数据”功能，服务器需要记录该值
+    PhotoStamp：客户端最后上传验证现场照片的记录时间戳标记，客户端在上传考勤照片的时候会同时发送该标记，具体详见“上传数据”功能，服务器需要记录该值
+    ErrorDelay：联网失败后客户端重新联接服务器的间隔时间（秒） 
+    Delay：正常联网时客户端联接服务器的间隔时间（秒） ，即客户端请求“获取命令”功能
+    TransTimes：客户端定时检查并传送新数据时间（时:分，24小时格式），多个时间用分号分开，最多支持10个时间，如TransTimes=00:00;14:00
+    TransInterval：客户端检查并传送新数据间隔时间（分钟），如TransInterval=1
+    TransFlag：客户端向服务器自动上传哪些数据的标识，设置的值支持两种格式
+                格式一：TransFlag=1111000000……，每一位代表一种数据类型，0—表示禁止该数据类型自动上传，1—表示允许该数据类型自动上传
+                            第几位        数据类型
+                            1            考勤记录
+                            2            操作日志
+                            3            考勤照片
+                            4            登记新用户
+                            5            修改用户信息
+                            6            登记新指纹
+                            7            修改指纹
+                            8            指纹图片
+                            9            新登记人脸
+                            10            用户照片
+                格式二：TransFlag=TransData AttLog${HT}OpLog${HT}AttPhoto……
+                            字符串标示        数据类型
+                            AttLog            考勤记录
+                            OpLog            操作日志
+                            AttPhoto        考勤照片
+                            EnrollUser        登记新用户
+                            ChgUser            修改用户信息
+                            EnrollFP        登记新指纹
+                            ChgFP            修改指纹
+                            FPImag            指纹图片
+                            FACE            新登记人脸
+                            UserPic            用户照片
+                客户端新开发时：请同时支持两种格式，并且当服务器使用格式一下发，并且设置的值全部为0（TransFlag=0000000000）时，表示仅支持上传考勤照片
+                服务端新开发时：支持格式一时，可支持中控所有新老版本固件设备；支持格式二时可，支持大部分老版本固件设备，支持所有新版本设备                    
+    TimeZone：指定服务器所在时区
+    Realtime：客户端是否实时传送新记录。 为1表示有新数据就传送到服务器，为0表示按照 TransTimes 和 TransInterval 规定的时间传送 
+    Encrypt：是否加密传送数据，保留未使用 
+    ServerVer：服务器版本号及时间（时间格式待定，旧版协议支持该参数）
+    ${XXX}Stamp：对配置信息“Stamp”、“OpStamp”、“PhotoStamp”的扩展，所以客户端发送请求的时候配置信息pushver大于等于2.0.0版本的话，服务器可下发该配置信息，如果下发该配置信息，则“Stamp”、“OpStamp”、“PhotoStamp”可省略。
+                            ${XXX}        数据类型
+                            ATTLOG        考勤记录
+                            OPERLOG        操作日志
+                            ATTPHOTO    考勤照片
+</code></pre><p>示例</p>
+<pre><code>客户端请求：
+GET /iclock/cdata?SN=0316144680030&amp;options=all&amp;pushver=2.2.14&amp;language=83&amp;pushcommkey=4a9594af164f2b9779b59e8554b5df26 HTTP/1.1
+Host: 58.250.50.81:8011
+User-Agent: iClock Proxy/1.09
+Connection: close
+Accept: */*
+
+服务器响应方式一：
+HTTP/1.1 200 OK    
+Server: nginx/1.6.0
+Date: Fri, 03 Jul 2015 06:53:01 GMT
+Content-Type: text/plain
+Content-Length: 190
+Connection: close
+Pragma: no-cache
+Cache-Control: no-store
+
+GET OPTION FROM: 0316144680030
+Stamp=None
+OpStamp=9999
+PhotoStamp=None
+ErrorDelay=30
+Delay=10
+TransTimes=00:00;14:05
+TransInterval=1
+TransFlag=1111101011
+TimeZone=8
+Realtime=1
+Encrypt=None
+
+服务器响应方式二：
+HTTP/1.1 200 OK    
+Server: nginx/1.6.0
+Date: Fri, 03 Jul 2015 06:53:01 GMT
+Content-Type: text/plain
+Content-Length: 190
+Connection: close
+Pragma: no-cache
+Cache-Control: no-store
+
+GET OPTION FROM: 0316144680030
+ATTLOGStamp=None
+OPERLOGStamp=9999
+ATTPHOTOStamp=None
+ErrorDelay=30
+Delay=10
+TransTimes=00:00;14:05
+TransInterval=1
+TransFlag=TransData AttLog    OpLog    AttPhoto    EnrollUser    ChgUser    EnrollFP    ChgFP    UserPic
+TimeZone=8
+Realtime=1
+Encrypt=None
+</code></pre><p><span id='uploadinfo' /></p>
+<h1 id="-">上传更新信息</h1>
+<p>该功能复用<a href="#downloadcmd">获取命令</a>请求，在其URL上加入参数，主要上传客户端的固件版本号、登记用户数、登记指纹数、考勤记录数、设备IP地址、指纹算法版本、人脸算法版本、注册人脸所需人脸个数、登记人脸数、设备支持功能标示信息</p>
+<p>客户端请求消息</p>
+<pre><code>Get /iclock/getrequest?SN=${SerialNumber}&amp;INFO=${Value1},${Value2},${Value3},${Value4},${Value5},${Value6},${Value7},${Value8},${Value9},${Value10}
+Host: ${ServerIP}:${ServerPort}
+……
+</code></pre><p>注释：</p>
+<pre><code>HTTP请求方法使用：GET方法
+URI使用：/iclock/getrequest
+HTTP协议版本使用：1.1
+客户端配置信息：
+    SN：${Required}表示客户端的序列号
+    ${Value1}：固件版本号
+    ${Value2}：登记用户数
+    ${Value3}：登记指纹数
+    ${Value4}：考勤记录数
+    ${Value5}：设备IP地址
+    ${Value6}：指纹算法版本
+    ${Value7}：人脸算法版本
+    ${Value8}：注册人脸所需人脸个数
+    ${Value9}：登记人脸数
+    ${Value10}：设备支持功能标示，格式：101，每一位代表一种功能，0—表示不支持该功能，1—表示支持该功能
+                第几位        功能描述
+                1            指纹功能
+                2            人脸功能
+                3            用户照片功能
+Host头域：${Required}
+其他头域：${Optional}
+</code></pre><p>服务器响应参见<a href="#downloadcmd">获取命令</a></p>
+<p>示例</p>
+<pre><code>客户端请求：
+GET /iclock/getrequest?SN=0316144680030&amp;INFO=Ver%202.0.12-20150625,0,0,0,192.168.16.27,10,7,15,0,111 HTTP/1.1
+Host: 58.250.50.81:8011
+User-Agent: iClock Proxy/1.09
+Connection: close
+Accept: */*
+
+服务器响应：
+HTTP/1.1 200 OK    
+Server: nginx/1.6.0
+Date: Tue, 30 Jun 2015 01:24:26 GMT
+Content-Type: text/plain
+Content-Length: 2
+Connection: close
+Pragma: no-cache
+Cache-Control: no-store
+
+OK
+</code></pre><p><span id='uploaddata' /></p>
+<h1 id="-">上传数据</h1>
+<p>具体哪些数据需要自动上传，服务器是可以控制的(详细见“初始化信息交互”的“TransFlag”参数)</p>
+<h2 id="-">上传的方式</h2>
+<pre><code>    实时上传
+    间隔上传
+    定时上传
+</code></pre><p>实时\间隔\定时三种上传方式，若支持实时，则间隔\定时方式不起作用<br>实时上传，设备本身默认支持，服务器是可以控制的(详细见“<a href="#initinfo">初始化信息交互</a>”的“Realtime”参数)<br>间隔上传，具体的间隔时间服务器是可以控制的(详细见“<a href="#initinfo">初始化信息交互</a>”的“TransInterval”参数)<br>定时上传，具体的上传时间点服务器是可以控制的(详细见“<a href="#initinfo">初始化信息交互</a>”的“TransTimes”参数)</p>
+<p><span id='uploadattlog' /></p>
+<h2 id="-">上传考勤记录</h2>
+<p>客户端请求消息</p>
+<pre><code>POST /iclock/cdata?SN=${SerialNumber}&amp;table=ATTLOG&amp;Stamp=${XXX} HTTP/1.1
+Host: ${ServerIP}:${ServerPort}
+Content-Length: ${XXX}
+……
+
+${DataRecord}
+</code></pre><p>注释：</p>
+<pre><code>HTTP请求方法使用：POST方法
+URI使用：/iclock/cdata
+HTTP协议版本使用：1.1
+客户端配置信息：
+    SN：${Required}表示客户端的序列号
+    table=ATTLOG：${Required}表示上传的数据为考勤记录
+    Stamp：${Optional}表示考勤记录上传到服务器的最新时间戳(详细见“初始化信息交互”的“Stamp”或者“ATTLOGStamp”参数)
+Host头域：${Required}
+Content-Length头域：${Required}
+其他头域：${Optional}
+请求实体：${DataRecord}，考勤记录数据，数据格式如下
+    ${Pin}${HT}${Time}${HT}${Status}${HT}${Verify}${HT}${Workcode}${HT}${Reserved}${HT}${Reserved}
+    注：
+    ${Time}：验证时间，格式为XXXX-XX-XX XX:XX:XX，如2015-07-29 11:11:11
+    多条记录之间使用${LF}连接
+</code></pre><p>服务器正常响应消息</p>
+<pre><code>HTTP/1.1 200 OK
+Content-Length: ${XXX}
+……
+
+OK:${XXX}
+</code></pre><p>注释：</p>
+<pre><code>HTTP状态行：使用标准的HTTP协议定义
+HTTP响应头域：
+    Content-Length头域：根据HTTP 1.1协议，一般使用该头域指定响应实体的数据长度，如果是在不确定响应实体的大小时，也支持Transfer-Encoding: chunked，Content-Length及Transfer-Encoding头域均是HTTP协议的标准定义，这里就不在详述
+响应实体：当服务器接收数据正常并处理成功时回复OK:${XXX}，其中${XXX}表示成功处理的记录条数，当出错时，回复错误描述即可
+</code></pre><p>示例</p>
+<pre><code>客户端请求：
+POST /iclock/cdata?SN=0316144680030&amp;table=ATTLOG&amp;Stamp=9999 HTTP/1.1
+Host: 58.250.50.81:8011
+User-Agent: iClock Proxy/1.09
+Connection: close
+Accept: */*
+Content-Length: 315
+
+1452    2015-07-30 15:16:28    0    1    0    0    0
+1452    2015-07-30 15:16:29    0    1    0    0    0
+1452    2015-07-30 15:16:30    0    1    0    0    0
+1452    2015-07-30 15:16:31    0    1    0    0    0
+1452    2015-07-30 15:16:33    0    1    0    0    0
+1452    2015-07-30 15:16:34    0    1    0    0    0
+1452    2015-07-30 15:16:35    0    1    0    0    0
+8965    2015-07-30 15:16:36    0    1    0    0    0
+8965    2015-07-30 15:16:37    0    1    0    0    0
+
+服务器响应：
+HTTP/1.1 200 OK
+Server: nginx/1.6.0
+Date: Thu, 30 Jul 2015 07:25:38 GMT
+Content-Type: text/plain
+Content-Length: 4
+Connection: close
+Pragma: no-cache
+Cache-Control: no-store
+
+OK:9
+</code></pre><p><span id='uploadattphoto' /></p>
+<h2 id="-">上传考勤照片</h2>
+<p>客户端请求消息</p>
+<pre><code>POST /iclock/cdata?SN=${SerialNumber}&amp;table=ATTPHOTO&amp;PhotoStamp=${XXX} HTTP/1.1
+Host: ${ServerIP}:${ServerPort}
+Content-Length: ${XXX}
+……
+
+${DataRecord}
+</code></pre><p>注释：</p>
+<pre><code>HTTP请求方法使用：POST方法
+URI使用：/iclock/cdata
+HTTP协议版本使用：1.1
+客户端配置信息：
+    SN：${Required}表示客户端的序列号
+    table=ATTPHOTO：${Required}
+    PhotoStamp：${Optional}表示考勤照片到服务器的最新时间戳(详细见“初始化信息交互”的“PhotoStamp”或者“ATTPHOTOStamp”参数)
+Host头域：${Required}
+Content-Length头域：${Required}
+其他头域：${Optional}
+请求实体：${DataRecord}，考勤照片数据，数据格式如下
+    PIN=${XXX}${LF}SN=${SerialNumber}${LF}size=${XXX}${LF}CMD=uploadphoto${NUL}${BinaryData}
+    注：
+    PIN=${XXX}：考勤照片的文件名，目前只支持jpg格式
+    SN=${XXX}：客户端系列号
+    size=${XXX}：考勤照片原始大小
+    ${BinaryData}：原始图片二进制数据流
+    不支持多条记录传输
+</code></pre><p>服务器正常响应消息</p>
+<pre><code>HTTP/1.1 200 OK
+Content-Length: ${XXX}
+……
+
+OK
+</code></pre><p>注释：</p>
+<pre><code>HTTP状态行：使用标准的HTTP协议定义
+HTTP响应头域：
+    Content-Length头域：根据HTTP 1.1协议，一般使用该头域指定响应实体的数据长度，如果是在不确定响应实体的大小时，也支持Transfer-Encoding: chunked，Content-Length及Transfer-Encoding头域均是HTTP协议的标准定义，这里就不在详述
+响应实体：当服务器接收数据正常并处理成功时回复OK，当出错时，回复错误描述即可
+</code></pre><p>示例</p>
+<pre><code>客户端请求：
+POST /iclock/cdata?SN=0316144680030&amp;table=OPERLOG&amp;OpStamp=9999 HTTP/1.1
+Host: 58.250.50.81:8011
+User-Agent: iClock Proxy/1.09
+Connection: close
+Accept: */*
+Content-Length: 1684
+
+PIN=20150731103012-123.jpg    SN=0316144680030    size=9512    CMD=uploadphoto${NUL}${BinaryData}
+
+
+服务器响应：
+HTTP/1.1 200 OK
+Server: nginx/1.6.0
+Date: Thu, 30 Jul 2015 07:25:38 GMT
+Content-Type: text/plain
+Content-Length: 2
+Connection: close
+Pragma: no-cache
+Cache-Control: no-store
+
+OK
+</code></pre><p><span id='uploadoplog' /></p>
+<h2 id="-">上传操作记录</h2>
+<p>客户端请求消息</p>
+<pre><code>POST /iclock/cdata?SN=${SerialNumber}&amp;table=OPERLOG&amp;OpStamp=${XXX} HTTP/1.1
+Host: ${ServerIP}:${ServerPort}
+Content-Length: ${XXX}
+……
+
+${DataRecord}
+</code></pre><p>注释：</p>
+<pre><code>HTTP请求方法使用：POST方法
+URI使用：/iclock/cdata
+HTTP协议版本使用：1.1
+客户端配置信息：
+    SN：${Required}表示客户端的序列号
+    table=OPERLOG：${Required}
+    OpStamp：${Optional}表示操作记录到服务器的最新时间戳(详细见“初始化信息交互”的“OpStamp”或者“OPERLOGStamp”参数)
+Host头域：${Required}
+Content-Length头域：${Required}
+其他头域：${Optional}
+请求实体：${DataRecord}，操作记录数据，数据格式如下
+    OPLOG${SP}${OpType}${HT}${OpWho}${HT}${OpTime}${HT}${Value1}${HT}${Value2}${HT}${Value3}${HT}${Reserved}
+    注：
+    多条记录之间使用${LF}连接
+</code></pre><p>服务器正常响应消息</p>
+<pre><code>HTTP/1.1 200 OK
+Content-Length: ${XXX}
+……
+
+OK:${XXX}
+</code></pre><p>注释：</p>
+<pre><code>HTTP状态行：使用标准的HTTP协议定义
+HTTP响应头域：
+    Content-Length头域：根据HTTP 1.1协议，一般使用该头域指定响应实体的数据长度，如果是在不确定响应实体的大小时，也支持Transfer-Encoding: chunked，Content-Length及Transfer-Encoding头域均是HTTP协议的标准定义，这里就不在详述
+响应实体：当服务器接收数据正常并处理成功时回复OK:${XXX}，其中${XXX}表示成功处理的记录条数，当出错时，回复错误描述即可
+</code></pre><p>示例</p>
+<pre><code>客户端请求：
+POST /iclock/cdata?SN=0316144680030&amp;table=OPERLOG&amp;OpStamp=9999 HTTP/1.1
+Host: 58.250.50.81:8011
+User-Agent: iClock Proxy/1.09
+Connection: close
+Accept: */*
+Content-Length: 166
+
+OPLOG 4    14    2015-07-30 10:22:34    0    0    0    0
+
+服务器响应：
+HTTP/1.1 200 OK
+Server: nginx/1.6.0
+Date: Thu, 30 Jul 2015 07:25:38 GMT
+Content-Type: text/plain
+Content-Length: 3
+Connection: close
+Pragma: no-cache
+Cache-Control: no-store
+
+OK:1
+</code></pre><p><span id='uploaduserinfo' /></p>
+<h2 id="-">上传用户信息</h2>
+<p>客户端请求消息</p>
+<pre><code>POST /iclock/cdata?SN=${SerialNumber}&amp;table=OPERLOG&amp;OpStamp=${XXX} HTTP/1.1
+Host: ${ServerIP}:${ServerPort}
+Content-Length: ${XXX}
+……
+
+${DataRecord}
+</code></pre><p>注释：</p>
+<pre><code>HTTP请求方法使用：POST方法
+URI使用：/iclock/cdata
+HTTP协议版本使用：1.1
+客户端配置信息：
+    SN：${Required}表示客户端的序列号
+    table=OPERLOG：${Required}
+    OpStamp：${Optional}表示用户信息到服务器的最新时间戳(详细见“初始化信息交互”的“OpStamp”或者“OPERLOGStamp”参数)
+Host头域：${Required}
+Content-Length头域：${Required}
+其他头域：${Optional}
+请求实体：${DataRecord}，用户信息数据，数据格式如下
+    USER${SP}PIN=${XXX}${HT}Name=${XXX}${HT}Pri=${XXX}${HT}Passwd=${XXX}${HT}Card=${XXX}${HT}Grp=${XXX}${HT}TZ=${XXX}
+    注：
+    Name=${XXX}：用户姓名，当设备为中文时，使用的是GB2312编码，其他语言时，使用UTF-8编码
+    Card=${XXX}：卡号，值支持两种格式
+        a、十六进制数据，格式为[%02x%02x%02x%02x]，从左到右表示第1、2、3、4个字节，如卡号为123456789，则为：Card=[15CD5B07]
+        b、字符串数据，如卡号为123456789，则为：Card=123456789
+    TZ=${XXX}：用户使用的时间段编号信息，值格式为
+        XXXXXXXXXXXXXXXX，1到4字符描述是否使用组时间段，5到8字符描述使用个人时间段1，9到12字符描述使用个人时间段2，13到16字符描述使用个人时间段3
+        如：0000000000000000，表示使用组时间段
+           0001000200000000，表示使用个人时间段，且个人时间段1使用时间段编号2的时间信息
+           0001000200010000，表示使用个人时间段，且个人时间段1使用时间段编号2的时间信息，个人时间段2使用时间段编号1的时间信息
+    多条记录之间使用${LF}连接
+</code></pre><p>服务器正常响应消息</p>
+<pre><code>HTTP/1.1 200 OK
+Content-Length: ${XXX}
+……
+
+OK:${XXX}
+</code></pre><p>注释：</p>
+<pre><code>HTTP状态行：使用标准的HTTP协议定义
+HTTP响应头域：
+    Content-Length头域：根据HTTP 1.1协议，一般使用该头域指定响应实体的数据长度，如果是在不确定响应实体的大小时，也支持Transfer-Encoding: chunked，Content-Length及Transfer-Encoding头域均是HTTP协议的标准定义，这里就不在详述
+响应实体：当服务器接收数据正常并处理成功时回复OK:${XXX}，其中${XXX}表示成功处理的记录条数，当出错时，回复错误描述即可
+</code></pre><p>示例</p>
+<pre><code>客户端请求：
+POST /iclock/cdata?SN=0316144680030&amp;table=OPERLOG&amp;OpStamp=9999 HTTP/1.1
+Host: 58.250.50.81:8011
+User-Agent: iClock Proxy/1.09
+Connection: close
+Accept: */*
+Content-Length: 166
+
+USER PIN=36234    Name=36234    Pri=0    Passwd=    Card=133440    Grp=1    TZ=0001000000000000
+USER PIN=36235    Name=36235    Pri=0    Passwd=    Card=133441    Grp=1    TZ=0001000000000000
+
+服务器响应：
+HTTP/1.1 200 OK
+Server: nginx/1.6.0
+Date: Thu, 30 Jul 2015 07:25:38 GMT
+Content-Type: text/plain
+Content-Length: 4
+Connection: close
+Pragma: no-cache
+Cache-Control: no-store
+
+OK:2
+</code></pre><p><span id='uploadfingerprint' /></p>
+<h2 id="-">上传指纹模版</h2>
+<p>客户端请求消息</p>
+<pre><code>POST /iclock/cdata?SN=${SerialNumber}&amp;table=OPERLOG&amp;OpStamp=${XXX} HTTP/1.1
+Host: ${ServerIP}:${ServerPort}
+Content-Length: ${XXX}
+……
+
+${DataRecord}
+</code></pre><p>注释：</p>
+<pre><code>HTTP请求方法使用：POST方法
+URI使用：/iclock/cdata
+HTTP协议版本使用：1.1
+客户端配置信息：
+    SN：${Required}表示客户端的序列号
+    table=OPERLOG：${Required}
+    OpStamp：${Optional}表示指纹模版到服务器的最新时间戳(详细见“初始化信息交互”的“OpStamp”或者“OPERLOGStamp”参数)
+Host头域：${Required}
+Content-Length头域：${Required}
+其他头域：${Optional}
+请求实体：${DataRecord}，指纹模版数据，数据格式如下
+    FP${SP}PIN=${XXX}${HT}FID=${XXX}${HT}Size=${XXX}${HT}Valid=${XXX}${HT}TMP=${XXX}
+    注：
+    Size=${XXX}：指纹模版base64编码之后的长度
+    TMP=${XXX}：传输指纹模版时，需要对原始二进制指纹模版进行base64编码
+    多条记录之间使用${LF}连接
+</code></pre><p>服务器正常响应消息</p>
+<pre><code>HTTP/1.1 200 OK
+Content-Length: ${XXX}
+……
+
+OK:${XXX}
+</code></pre><p>注释：</p>
+<pre><code>HTTP状态行：使用标准的HTTP协议定义
+HTTP响应头域：
+    Content-Length头域：根据HTTP 1.1协议，一般使用该头域指定响应实体的数据长度，如果是在不确定响应实体的大小时，也支持Transfer-Encoding: chunked，Content-Length及Transfer-Encoding头域均是HTTP协议的标准定义，这里就不在详述
+响应实体：当服务器接收数据正常并处理成功时回复OK:${XXX}，其中${XXX}表示成功处理的记录条数，当出错时，回复错误描述即可
+</code></pre><p>示例</p>
+<pre><code>客户端请求：
+POST /iclock/cdata?SN=0316144680030&amp;table=OPERLOG&amp;OpStamp=9999 HTTP/1.1
+Host: 58.250.50.81:8011
+User-Agent: iClock Proxy/1.09
+Connection: close
+Accept: */*
+Content-Length: 4950
+
+FP PIN=2    FID=0    Size=1124    Valid=1    TMP=SghTUzIxAAADS00ECAUHCc7QAAAnSnkBAAAAg/YUfEsyAIEPHgH6ALFHRQBBAPkP8wBAS2UPEwBTACYPe0tYAHkIjACuAHdIeQBtAGwEUAB1S20DhAB+AK8EXUuPAOoPJABwANVENQDCANsPZQDbSx8PbwDeACwPz0vjAJ8PdwArAPFELAD5AMwPvQASSvMKMgAwAQkPSUE2DkcXQ0uCQ1B4AJT7GZuC3GyNySrvjoKT7X77SkYkB9L6MQhMCV5G1PUR+T0FfPiGTqMABQHp+XgBhclzg397xf0iD5CkQAXvErv3q4PQZ940xfmXzBb5bcher2e7PQkLAXyf8gJ78nP7iwFIQmrXcwKn31LfiwoBIDQBAjrbrAdLOBFwwv8ExVYStv7ABQBOE7+JCEt/GIBs/4SqDwPoJ4yHwMDEBcHDicB/DQCrLkbAwgnFcnwGAHn2g4iICQCsNoPCnm4RS75CjJ0rgwFqwS4HADFDZmwEAwJcRjrABwA1jWTCtMX+whMAw4+JwYnC+//Aw3pCwsK0wRIAxFKJB8PAsfzCw3WLwaENAz9besHBi4eqBwOPW4PBwsEoygBxKnvCwcLAwqx4WFIB02WGwl86boCLw4b/ZMFx3ADXJ4FSi3X/wqt2whjD/wkAc261eMKKigQBG249lwUD0nP9QxEAdbZwwYt5wcHCwME6wcMuBQCeeANl1gCQMWjC/v+DwL90UbQCAIF7cMLNAJo2CMHA+/xTzQCCy2jA/pPABMXTh2ZXEQEfnkCn/8OLwWVdSQMB18tDiwsBF8s9RZFcFUvqza3C/3gAwMOMw1lxZ8IaxeXM7cFyxMDCpLvAdCDD/n4HAKMcHsMH/gsAcNreO/z/tfxC/wsAdBvk/bf9/T5KFAAM4KfPxMHFjP/CB8DDi8FzCgBs4p+EwhHBGwDr4qQEUcA2wsPBwMF4B8DCEML+wAQAei/wH1wB6/Gma8AFxI2IwIPAg1gYxej46Ut8n8PBwqrBbgYJEHsO4vk8/cMkBRCIF1NpxhCGe0jBERDTMGxri4/CrGb/FBAaMqiLccDAwMTFAMLAi8PB/8HAA9WLOgj/DxDPPqtA/8GJtcRCDBDEj55Bi/7JyZMEEdFRQ7T4
+FP PIN=2    FID=1    Size=2120    Valid=1    TMP=T3dTUzIxAAAGNDsECAUHCc7QAAAeNWkBAAAAhtlDsjQjAKIPYgDiAHo7NgA1AHAPZgBSNKQPdwBWAOAPVjRYABMPsACiADM76wB8ALkO2QB4NFgPVQCCAP0O2TSTALoOYABeAEo7TgCdAFMPwQGmNNgNwgCiAH0PnDSpAEQPCgFuAEI5eQCtAEcPIwCpNMoNEgGwAPkNvTSyADoP+ABxAEY/KgC1ANUPVQC/NMMP7gC8AAwNHTTAAM0O9AAEAEc5JgDCANQO7QDKNN4OzgDOAH4OHjTQANUODgAdAMc6ZgDgAEsPNgDmNMMOKQDiAKMOEjTlAOUOzgAhAM86QQDmAGUPRQDoNFIPaQDwAAIP6DT3AD8OBgEzALk6uAD3AMQOCAAHNTQOPwAHAaEPDTUGAUIOtQDMAUY7oQAMAU8PEAAJNbQO8gAZAXgPxDQfATsOCgHaAcQ63AApATYOZAAqNToMmAAvAY0M/TQuAcANyQD1AcY60gA2AT8OaAA/NcELOgA7ASYPlDQ8AWQLJQCEAfQ7hQBEAd8OKwBCNb8ORABMASoPdDROAeUOnACUAco5Lv0jb0N/vw8xbVZpOl8G9+JPA0Zbg6sF2hafgw2db/Kq3hanMJLdJ1p/HQLu48rxWbIqIj8Lee9U5wASmAL+8DIEdPjjI1MEKQj1H1OD0qPInf2aGYFzANzakIW6/UoNkQruW6gFTYfW/PMF5zDAjd2O3PosZbvLGIVugNb5YXuLNMx1+QARCTT6k7VQf7qL1IpZi2c0ufv9+NHwGXoLNOR66PcwC7wAWjsUDD0UBfargLTBFRd1CKH4be/q65T3cYRJ+3fqD7LgB4KAmYEciic2SSdlEZmBvBIfM/iXpQJeAHuJr7rAC04HdXxwdkBTDH5Bglr9MH1HtmT/BYXRkmT/c7TgcsH23gAPAw2o9IWBgqaEzH27xWgGLRFyFNOMc7QwfgGD9f4I/i+/dH0pivH+2AaHtkgGpfi9efR7vsJofaXaLA5M5Eu+oAJxBhkGHYN3sbSN2IMdCCwHZ7FUej1fyfXU8mW17ByJhEmaQBKYMGKTkXwN/XAXnzZXgG6IPQ3n/JE4hAmKgZ4bpGpP24wPjfRRa9Hpz8AEIEwBAungoQU0ZwUAwAwAaAcidMBEwDgKAH0IIctEQv4SAHzOEzP0/0NAW8L9xgCfPx3/CgDDC+L/U8tKDQBnDAk4RvgMw/3AFgCNyRcwH1VYVDyfB8XQChnBVf8SADfU/cbK/v7/O8H8BcL4y0gDAOQkLToLBgMb/TwwQQnFuCAZS1X+CwAm4vdKyf/AKwUAX+2AdiEBUS4A/yeD/VdyZWADADMztMAeNFc1APwwMDvA+WdZW//AxQTFND9ZZAgApVcwOlXG9AYAelgg/ur/EzRUWRD+/v31wDEHTcE4GgADm+lV9Pz9wP0wKTpDxnhoEAAHaOL9O/vK/v7+/jQHxAVuZ5X9wgUAsaw0TCYBCHLkR/4FISx1Oh8AAX7wBkcozy8wRTbC/j7CQBgCARCAVsHBABy0X40EAOuAg3YANEWDaZ3CCMVYjwP6RjYEAD5KXI4wAUSPVlYFxUqJePxPHQAEkRL++GP8+/4j/v+O/8fK/cFW/ykOxd+QDv5Xc8DCwJULBmufSTj//cDqBQZ/nlNBBwBQZEz4y/8yBADDpvHA+CQBl6tDUlE+wccHwfsUAJyrhVVdyv3E///9/wX7+2MCAQevRsHDAQqbQf9SBgB4dUZD9AsAv7U3QQXAxUQEALq2QGjdAB+Jx/7///7+0vz4HcH+/8H9/wX++TcBCL9AwQXF7cZ0/sLBCAD9AkD79Xb/IAACygUoxsvB/f/9+/04/fjK/v3AwP//Bf3E9MH9/v3+HcUP0PfD/MD+//86/fvP/SErS//AOz74MAAS3El9BMUl510xBgD/40AH/Hk/AWfmUP5VhCIANN3nQMDBV8AAOt5j/0AKAIA0UEV0/P0GAOv6g8RAMRE9CmLAI8EQtDhCcwkQuAzyQPvJ+/8FEJwPlf5wMxHWEzf9wgT/wjcQFRhQwQbV0xxyY/0DEMMihcEFJNwvNMEDEBY5RvUEEJVBVvmTBRY5Tf1RChBCpwDG9MHAwMBKAA==
+FP PIN=3    FID=0    Size=1592    Valid=1    TMP=TetTUzIxAAAEqKsECAUHCc7QAAAcqWkBAAAAhFUooagrAKAPQADpAGKnzgAuAKkPtQA1qIsPnQBGAO0PTqhKAGIPlgCrADanNwByAEIPngB6qDQOfgCLAGENJKiNAD0PiABTAKimdACXAB0OVgCmqKwOigCnAFgOtqi0AKsPiAByAJimyQC3AKsPjQDEqKwPngDBAFIPrqjDAKIPaQAPABGnrwDQAIwPAQDQqJsP6wDUAF4PXKjgAJ8PwgAhAIOm2QDrAIwPTgDrqJIPQwD8AFYPdqj/AJQP9gDBAYmnugAGAXwPrwANqZMP6QAJAUYOWagTAYsP+AD2AWqmVAA0AX8PUQA8qYAP6ABDAbIPKdPn+18ZTgTm3GePXwtHgjd7mih7jAplJYui+i6h1lRzIwfYrpLTDpojnwVODhLjqxleOdv2Afg5iMsIJlU6C2uTeQgwABW4PHhhcX2DhRNxqCgS0PMpAGTwKaDYAkEWqQB88vGuWAIdE0oIJ5kGuRof7PcJDhDuZKcUGLX4xXs/aVLRqOyV9v326BRpuqzzQhBmApMXuSc/DZL1wezA/p1XgAbS8Jr0nANWq9IICgnK9TsCQaxMC9kDZQxXAjeIz/Xm8gv4DABRoH8C8fiq+fcX2VDY+5L5dfoD79dIz/XX7LfvZvOHr94H6QrL9xbvuTys+2sgRAHHpSVRDQCpBCtrlmTEpgGQBxw4/55qYK0BcQgP/zHBAIWgEScTAF0Jxvz7V/5HwP5rZ5QMBDYIHv5KwGKRBAQSCydZBQDDzifE7wUAtQ0nYNMAQLgBwP3+QV6hUl30CgAlJ+D8O/3EVf4wFwAqKiL9+Vf/MThTZcAEwY+gAWwsj5LDQAYElSxndMINAG0tI/1j/8L/XQzFbDYhwJ9pwnsFxdI2j1MJAHQzHoNU+64BRkprwsS2DwTmS/38//wwkMPGxgwAnEorwjv/YGjAwYQOAEmKZ8ckksLBwsDAzwCxwSj/wVjCcdQAU8VWxMPCwcIHw/tqwMDC/UsMxTlqfif9/MD9/qoMBPRuT8LDxMBYwWiuAZdwMFLAwwBl3UHDw8DDB8Uzcu6RwsIGADmzQ8UgCQBleCfDiWEfqA6Fyf////T++VX+/f7/wP4F/8RowItvBgBaQDTGIAwAe4ipwjvIzW2hfhUAFo8DQfpX//39/S7/7nwIqByPQ8LCiAV+xKABI489jMK2BAQdkDSDFQCIV6v7IMfHw8TCwgb/xtTAhQUAdZvnw/poCgAVoD2SuWQDqLe5IHSFCsURv5jCacHB/sPGAKZrFsAGAEzE4cF+rwFsyRPAhjsGBKbLKcLAiAnFa8q2wv/Cw1MGxcjSv8HCRg0AWyEXftZHSQQA3O3KWQ2ojvADaEf/xgBDVRLABRAnAMxHArh3AAl+wATVvwKoQAUQKQgTAPzGrhFuCQZpwMgQ/7qHdsDCQ/4FwRW4LhYJwf/COsJUaMNDQBAQOuYJdFfAZmb+YAjV/C7YM2QJEQMtk/77Vf//UgUQWfH9UKcR9TdwLcCeUm2vEZA7fVJdyRDg7nvA/2jC/gY/Drg7XAPAbcI7/cb6QwALQwAADKcPCQ==
+
+
+服务器响应：
+HTTP/1.1 200 OK
+Server: nginx/1.6.0
+Date: Thu, 30 Jul 2015 07:25:38 GMT
+Content-Type: text/plain
+Content-Length: 4
+Connection: close
+Pragma: no-cache
+Cache-Control: no-store
+
+OK:3
+</code></pre><p><span id='uploadface' /></p>
+<h2 id="-">上传面部模版</h2>
+<p>客户端请求消息</p>
+<pre><code>POST /iclock/cdata?SN=${SerialNumber}&amp;table=OPERLOG&amp;OpStamp=${XXX} HTTP/1.1
+Host: ${ServerIP}:${ServerPort}
+Content-Length: ${XXX}
+……
+
+${DataRecord}
+</code></pre><p>注释：</p>
+<pre><code>HTTP请求方法使用：POST方法
+URI使用：/iclock/cdata
+HTTP协议版本使用：1.1
+客户端配置信息：
+    SN：${Required}表示客户端的序列号
+    table=OPERLOG：${Required}
+    OpStamp：${Optional}表示面部模版到服务器的最新时间戳(详细见“初始化信息交互”的“OpStamp”或者“OPERLOGStamp”参数)
+Host头域：${Required}
+Content-Length头域：${Required}
+其他头域：${Optional}
+请求实体：${DataRecord}，面部模版数据，数据格式如下
+    FACE${SP}PIN=${XXX}${HT}FID=${XXX}${HT}SIZE=${XXX}${HT}VALID=${XXX}${HT}TMP=${XXX}
+    注：
+    SIZE=${XXX}：面部模版base64编码之后的长度
+    TMP=${XXX}：传输面部模版时，需要在原始二进制面部模版前加上16个字节（内容随意）后在进行base64编码
+    多条记录之间使用${LF}连接
+</code></pre><p>服务器正常响应消息</p>
+<pre><code>HTTP/1.1 200 OK
+Content-Length: ${XXX}
+……
+
+OK:${XXX}
+</code></pre><p>注释：</p>
+<pre><code>HTTP状态行：使用标准的HTTP协议定义
+HTTP响应头域：
+    Content-Length头域：根据HTTP 1.1协议，一般使用该头域指定响应实体的数据长度，如果是在不确定响应实体的大小时，也支持Transfer-Encoding: chunked，Content-Length及Transfer-Encoding头域均是HTTP协议的标准定义，这里就不在详述
+响应实体：当服务器接收数据正常并处理成功时回复OK:${XXX}，其中${XXX}表示成功处理的记录条数，当出错时，回复错误描述即可
+</code></pre><p>示例</p>
+<pre><code>客户端请求：
+POST /iclock/cdata?SN=0316144680030&amp;table=OPERLOG&amp;OpStamp=9999 HTTP/1.1
+Host: 58.250.50.81:8011
+User-Agent: iClock Proxy/1.09
+Connection: close
+Accept: */*
+Content-Length: 1684
+
+FACE PIN=306    FID=2    SIZE=1648    VALID=1    TMP=AAAAAAAAAAAAAAAAAAAAAFpLRmlYATFLFLToAUQBQ1Mg+fgXuia23BDrNtwSfgJ8g74H3YHmXlkFpgetB5eH5yXuBvMLoa6wSx9HNgK7RP80v1i+LLY8nCn7PXmD7w15Bp8N1wm/A78PowejZx9jJyWnBZ88K5wVfDDcNTjifGIvox9iD8sf1g37B70Fk4WRl5RrKq8uD2MngRexMxk5cbDiH+c3xj+CV8Zf1idaDfWbkB8Rnwt/AV8Du0SvAddBywHMQ9MVysfFkNENfZD9FJ9jrnGeBD5Kcwp7CVySfJzOE+wZxjWFVY6fgreXHBd6B4ov4BXBX+GuIZ4pazBTINiG8kf4h/DHxGaFxYe+yh+O1slCDsPcweuB/SHnA+UnqwG3AvnA88DZg/vhmaaV4dsWzwerBn1jLcN8wu/ErITiR+YHVsc1wy2wdaC5uEmxKbwZ+AGeB5fFt6WLVa8kq/gvqqv8LvwsBAACAgIHAQABAAEGAUxyAQkcIP9SAAohGhchAQAAEAEAAQYFASBPAgYGB1YKAQEMBgAACg8HFQ0DDAoEAg8CCBQDAxtLDwM40CUFEBNVSQYDDRNJJg8CAAcJFBMMAQQiYA8MAwhZHAcEehMCACYEAAwACQsJBQAFBAYxAAknpwQGJ6EiBAUPIxwFBwQPOgQCBAARGz8WCAIAGUQWBggLhyMIBJQlBAIiAgUEAgMPAwUACQAFUAABE/8EBwkQEgABCRECBwQFFEYNCAcCFiJ3YwUACTpKLgwBDn8yDApjFAIBEwAAAwACBgEAAAECAUMBAwBCAAACAQIBAAEABAMBAQUEAQMCBR0x/z4CAhUhSk8GAAcIDhUBNgsLDQMBAQAAAAYDAAAAAAEEAQAHBwEGQWEIAAJe/zQBAAYY/30GAAABAAICAgAABAMAAAEFFAgAAAoEAAEUAgABAQEABwEECQMWGAIBDSIHASH/HQQIClQeBgYMCgsIAwEBDSB0IBEJAjLbQgkIB245BQYKCAAEAAEDAwEDDgcKAQIBAhwABB+4DAQOoiAFCAgXFwMBByNDCgYBABUQGSYDAwItYhMIATG9KQwLV0oCBBkEAQgBDggHAQADBwJDAxAS6AIGFxYXBgMiRxQNCgMXvCMOBQIXGrxABgkGJQ4YBQEQHxUJBUgNCgggAwIBAgMKAAAAAgMCJwADAzUAAAEAAwAAAB4BAAEAAAAAAAAAA1j/JgQGAxf/fAMBAgkLAAEEAgIAAAAEAAEAAwEAAAABAAQAAAAAAAABAAAAARgQAQABAjP/KQMAAAIDAQEBBAIEBAoCAAoUAgMBRAYCACoBAQAAAAsDAgAAAgEJAAMDHgABEiwNAQQnRA8DAwc5lDICAQAIETAbAAEGM00eAQApYCIKA/81CwU5DAIGAAEEBQQABQACKAAGG2MEAxkpFQMBCTkKAAUCFSYJAQABDByEGwIBAjUrIQUDO/8eCwSMRAQACAQABQEABgAAAAMAAA8AAAMuAAAAAwgCBQMFCQcCBBNECgMAAAQvZhABAAhZ/DIBACL/XQgDJiEHAgwFAQEAAAcDAAAAAQEDAAACAAAAAwEAAgEFCQEBBAEHIAIAAQELFRQEAwICS/8rBQEDRVQUBAYODwQAAAgAAAANAAAAAAAA
+
+
+服务器响应：
+HTTP/1.1 200 OK
+Server: nginx/1.6.0
+Date: Thu, 30 Jul 2015 07:25:38 GMT
+Content-Type: text/plain
+Content-Length: 4
+Connection: close
+Pragma: no-cache
+Cache-Control: no-store
+
+OK:1
+</code></pre><p><span id='uploaduserpic' /></p>
+<h2 id="-">上传用户照片</h2>
+<p>客户端请求消息</p>
+<pre><code>POST /iclock/cdata?SN=${SerialNumber}&amp;table=OPERLOG&amp;OpStamp=${XXX} HTTP/1.1
+Host: ${ServerIP}:${ServerPort}
+Content-Length: ${XXX}
+……
+
+${DataRecord}
+</code></pre><p>注释：</p>
+<pre><code>HTTP请求方法使用：POST方法
+URI使用：/iclock/cdata
+HTTP协议版本使用：1.1
+客户端配置信息：
+    SN：${Required}表示客户端的序列号
+    table=OPERLOG：${Required}
+    OpStamp：${Optional}表示用户照片到服务器的最新时间戳(详细见“初始化信息交互”的“OpStamp”或者“OPERLOGStamp”参数)
+Host头域：${Required}
+Content-Length头域：${Required}
+其他头域：${Optional}
+请求实体：${DataRecord}，用户照片数据，数据格式如下
+    USERPIC${SP}PIN=${XXX}${HT}FileName=${XXX}${HT}Size=${XXX}${HT}Content=${XXX}
+    注：
+    FileName=${XXX}：用户照片的文件名，目前只支持jpg格式
+    Content=${XXX}：传输用户照片时，需要对原始二进制用户照片进行base64编码
+    Size=${XXX}：用户照片base64编码之后的长度
+    多条记录之间使用${LF}连接
+</code></pre><p>服务器正常响应消息</p>
+<pre><code>HTTP/1.1 200 OK
+Content-Length: ${XXX}
+……
+
+OK:${XXX}
+</code></pre><p>注释：</p>
+<pre><code>HTTP状态行：使用标准的HTTP协议定义
+HTTP响应头域：
+    Content-Length头域：根据HTTP 1.1协议，一般使用该头域指定响应实体的数据长度，如果是在不确定响应实体的大小时，也支持Transfer-Encoding: chunked，Content-Length及Transfer-Encoding头域均是HTTP协议的标准定义，这里就不在详述
+响应实体：当服务器接收数据正常并处理成功时回复OK:${XXX}，其中${XXX}表示成功处理的记录条数，当出错时，回复错误描述即可
+</code></pre><p>示例</p>
+<pre><code>客户端请求：
+POST /iclock/cdata?SN=0316144680030&amp;table=OPERLOG&amp;OpStamp=9999 HTTP/1.1
+Host: 58.250.50.81:8011
+User-Agent: iClock Proxy/1.09
+Connection: close
+Accept: */*
+Content-Length: 1684
+
+USERPIC PIN=123    FileName=123.jpg    Size=10    Content=AAAAAAAAAA
+
+
+服务器响应：
+HTTP/1.1 200 OK
+Server: nginx/1.6.0
+Date: Thu, 30 Jul 2015 07:25:38 GMT
+Content-Type: text/plain
+Content-Length: 4
+Connection: close
+Pragma: no-cache
+Cache-Control: no-store
+
+OK:1
+</code></pre><p><span id='downloadcmd' /></p>
+<h1 id="-">获取命令</h1>
+<p>如果服务器需要对设备进行操作，需先生成命令格式，等待设备发起请求时，再将命令发送到设备，对于命令的执行结果见<a href="#replycmd">回复命令</a></p>
+<p>客户端请求消息</p>
+<pre><code>Get /iclock/getrequest?SN=${SerialNumber}
+Host: ${ServerIP}:${ServerPort}
+……
+</code></pre><p>注释：</p>
+<pre><code>HTTP请求方法使用：GET方法
+URI使用：/iclock/getrequest
+HTTP协议版本使用：1.1
+客户端配置信息：
+    SN：${Required}表示客户端的序列号
+Host头域：${Required}
+其他头域：${Optional}
+</code></pre><p>服务器正常响应消息</p>
+<pre><code>当无命令时，回复信息如下：
+HTTP/1.1 200 OK
+Date: ${XXX}
+Content-Length: 2
+……
+
+OK
+
+当有命令时，回复信息如下：
+HTTP/1.1 200 OK
+Date: ${XXX}
+Content-Length: ${XXX}
+……
+
+${CmdRecord}
+</code></pre><p>注释：</p>
+<pre><code>HTTP状态行：使用标准的HTTP协议定义
+HTTP响应头域：
+    Date头域：${Required}使用该头域来同步服务器时间，并且时间格式使用GMT格式，如Date: Fri, 03 Jul 2015 06:53:01 GMT
+    Content-Length头域：根据HTTP 1.1协议，一般使用该头域指定响应实体的数据长度，如果是在不确定响应实体的大小时，也支持Transfer-Encoding: chunked，Content-Length及Transfer-Encoding头域均是HTTP协议的标准定义，这里就不在详述
+响应实体：${CmdRecord}，下发的命令记录，数据格式如下
+    C:${CmdID}:${CmdDesc}${SP}${XXX}
+    注：
+    ${CmdID}：该命令编号是由服务器随机生成的，客户端回复命令时需带上该命令编号，详细见下面“回复命令”功能
+    ${CmdDesc}：命令描述分为数据命令和控制命令，数据命令统一为“DATA”描述，详细见下面“数据命令”功能，各种控制命令为各种不同的描述
+    多条记录之间使用${LF}连接
+</code></pre><h2 id="-">数据命令</h2>
+<p>当服务器下发的命令中${CmdDesc}为“DATA”时，就认为该命令为数据命令，可以对客户端的数据进行增、删、改、查操作，但是具体的不同的业务数据可支持的操作是不一样的，下面将详术</p>
+<h3 id="-">新增或修改数据</h3>
+<p>命令格式如下</p>
+<pre><code>C:${CmdID}:DATA${SP}UPDATE${SP}${TableName}${SP}${DataRecord}
+说明：
+UPDATE：使用该描述表示新增或修改数据操作
+${TableName}：不同的业务数据表名，比如用户信息为USERINFO，具体支持的数据如下描述
+${DataRecord}：业务数据记录，使用key=value的形式，不同业务数据，key描述是不一样的，具体如下描述
+</code></pre><p><span id='downloaduser' /></p>
+<h4 id="-">用户信息</h4>
+<p>命令格式如下</p>
+<pre><code>C:${CmdID}:DATA${SP}UPDATE${SP}USERINFO${SP}PIN=${XXX}${HT}Name=${XXX}${HT}Passwd=${XXX}${HT}Card=${XXX}${HT}Grp=${XXX}${HT}TZ=${XXX}${HT}Pri=${XXX}
+说明：
+PIN=${XXX}：用户工号
+Name=${XXX}：用户姓名，当设备为中文时，使用的是GB2312编码，其他语言时，使用UTF-8编码
+Passwd=${XXX}：密码
+Card=${XXX}：卡号，值支持两种格式
+    a、十六进制数据，格式为[%02x%02x%02x%02x]，从左到右表示第1、2、3、4个字节，如卡号为123456789，则为：Card=[15CD5B07]
+    b、字符串数据，如卡号为123456789，则为：Card=123456789
+Grp=${XXX}：用户所属组，默认属于1组
+TZ=${XXX}：用户使用的时间段编号信息，值格式为
+    XXXXXXXXXXXXXXXX，1到4字符描述是否使用组时间段，5到8字符描述使用个人时间段1，9到12字符描述使用个人时间段2，13到16字符描述使用个人时间段3
+    如：0000000000000000，表示使用组时间段
+       0001000200000000，表示使用个人时间段，且个人时间段1使用时间段编号2的时间信息
+       0001000200010000，表示使用个人时间段，且个人时间段1使用时间段编号2的时间信息，个人时间段2使用时间段编号1的时间信息
+Pri=${XXX}：用户权限值，值意义如下
+    值        描述
+    0        普通用户
+    2        登记员
+    6        管理员
+    10        用户自定义
+    14        超级管理员
+多条记录之间使用${LF}连接
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=DATA
+</code></pre><p><span id='downloadfingerprint' /></p>
+<h4 id="-">指纹模版</h4>
+<p>命令格式如下</p>
+<pre><code>C:${CmdID}:DATA${SP}UPDATE${SP}FINGERTMP${SP}PIN=${XXX}${HT}FID=${XXX}${HT}Size=${XXX}${HT}Valid=${XXX}${HT}TMP=${XXX}
+说明：
+PIN=${XXX}：用户工号
+FID=${XXX}：手指编号，取值为0到9
+Size=${XXX}：指纹模版二进制数据经过base64编码之后的长度
+Valid=${XXX}：描述模版有效性及胁迫标示，值意义如下：
+    值        描述
+    0        无效模版
+    1        正常模版
+    3        胁迫模版
+TMP=${XXX}：传输指纹模版时，需要对原始二进制指纹模版进行base64编码
+多条记录之间使用${LF}连接
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=DATA
+</code></pre><h4 id="-">面部模版</h4>
+<p>命令格式如下</p>
+<pre><code>C:${CmdID}:DATA${SP}UPDATE${SP}FACE${SP}PIN=${XXX}${HT}FID=${XXX}${HT}Valid=${XXX}${HT}Size=${XXX}${HT}TMP=${XXX}
+说明：
+PIN=${XXX}：用户工号
+FID=${XXX}：面部模版编号，取值从0开始
+Size=${XXX}：面部模版二进制数据经过base64编码之后的长度
+Valid=${XXX}：面部模版有效性标示，值意义如下：
+    值        描述
+    0        无效模版
+    1        正常模版
+TMP=${XXX}：传输面部模版时，需要对原始二进制面部模版进行base64编码
+多条记录之间使用${LF}连接
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=DATA
+</code></pre><h4 id="-">用户照片</h4>
+<p>命令格式如下</p>
+<pre><code>C:${CmdID}:DATA${SP}UPDATE${SP}USERPIC${SP}PIN=${XXX}${HT}Size=${XXX}${HT}Content=${XXX}
+说明：
+PIN=${XXX}：用户工号
+Size=${XXX}：用户照片二进制数据经过base64编码之后的长度
+Content=${XXX}：传输用户照片时，需要对原始二进制用户照片进行base64编码
+多条记录之间使用${LF}连接
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=DATA
+</code></pre><h3 id="-">删除数据</h3>
+<p>命令格式如下</p>
+<pre><code>C:${CmdID}:DATA${SP}DELETE${SP}${TableName}${SP}${DataRecord}
+说明：
+DELETE：使用该描述表示删除数据操作
+${TableName}：不同的业务数据表名，比如用户信息为USERINFO，具体支持的数据如下描述
+${DataRecord}：删除数据的条件，不同业务数据，支持的条件不一样，具体如下描述
+</code></pre><h4 id="-">用户信息</h4>
+<p>命令格式如下</p>
+<pre><code>C:${CmdID}:DATA${SP}DELETE${SP}USERINFO${SP}PIN=${XXX}
+说明：
+PIN=${XXX}：用户工号
+删除指定的用户信息，包括指纹模版、面部模版、用户照片等相关信息
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=DATA
+</code></pre><h4 id="-">指纹模版</h4>
+<p>命令格式如下</p>
+<pre><code>C:${CmdID}:DATA${SP}DELETE${SP}FINGERTMP${SP}PIN=${XXX}${HT}FID=${XXX}
+说明：
+PIN=${XXX}：用户工号
+FID=${XXX}：手指编号，取值为0到9
+删除指定的指纹模版，当只传输PIN信息时，删除用户的所有指纹模版
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=DATA
+</code></pre><h4 id="-">面部模版</h4>
+<p>命令格式如下</p>
+<pre><code>C:${CmdID}:DATA${SP}DELETE${SP}FACE${SP}PIN=${XXX}
+说明：
+PIN=${XXX}：用户工号
+删除指定用户的面部模版
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=DATA
+</code></pre><h4 id="-">用户照片</h4>
+<p>命令格式如下</p>
+<pre><code>C:${CmdID}:DATA${SP}DELETE${SP}USERPIC${SP}PIN=${XXX}
+说明：
+PIN=${XXX}：用户工号
+删除指定用户的用户照片
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=DATA
+</code></pre><h3 id="-">查询数据</h3>
+<p>命令格式如下</p>
+<pre><code>C:${CmdID}:DATA${SP}QUERY${SP}${TableName}${SP}${DataRecord}
+说明：
+QUERY：使用该描述表示查询数据操作
+${TableName}：不同的业务数据表名，比如用户信息为USERINFO，具体支持的数据如下描述
+${DataRecord}：查询数据的条件，不同业务数据，支持的条件不一样，具体如下描述
+</code></pre><h4 id="-">考勤记录</h4>
+<p>命令格式如下</p>
+<pre><code>C:${CmdID}:DATA${SP}QUERY${SP}ATTLOG${SP}StartTime=${XXX}${HT}EndTime=${XXX}
+说明：
+StartTime=${XXX}：查询起始时间，格式为XXXX-XX-XX XX:XX:XX，如2015-07-29 00:00:00
+EndTime=${XXX}：查询截止时间，格式为XXXX-XX-XX XX:XX:XX，如2015-07-29 23:59:59
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=DATA
+</code></pre><p>查询指定时间段的考勤记录，如何上传详见“<a href="#uploadattlog">上传考勤记录</a>”</p>
+<h4 id="-">考勤照片</h4>
+<p>命令格式如下</p>
+<pre><code>C:${CmdID}:DATA${SP}QUERY${SP}ATTPHOTO${SP}StartTime=${XXX}${HT}EndTime=${XXX}
+说明：
+StartTime=${XXX}：查询起始时间，格式为XXXX-XX-XX XX:XX:XX，如2015-07-29 00:00:00
+EndTime=${XXX}：查询截止时间，格式为XXXX-XX-XX XX:XX:XX，如2015-07-29 23:59:59
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=DATA
+</code></pre><p>查询指定时间段的考勤照片，如何上传详见“<a href="#uploadattphoto">上传考勤照片</a>”</p>
+<h4 id="-">用户信息</h4>
+<p>命令格式如下</p>
+<pre><code>C:${CmdID}:DATA${SP}QUERY${SP}USERINFO${SP}PIN=${XXX}
+说明：
+PIN=${XXX}：用户工号
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=DATA
+</code></pre><p>查询指定用户的基本信息，如何上传详见“<a href="#uploaduserinfo">上传用户信息</a>”</p>
+<h4 id="-">指纹模版</h4>
+<p>命令格式如下</p>
+<pre><code>C:${CmdID}:DATA${SP}QUERY${SP}FINGERTMP${SP}PIN=${XXX}${HT}FingerID=${XXX}
+说明：
+PIN=${XXX}：用户工号
+FingerID=${XXX}：手指编号，取值为0到9
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=DATA
+</code></pre><p>查询指定用户的指纹模版信息，当只传输PIN信息时，查询指定用户的所有指纹模版信息，如何上传详见“<a href="#uploadfingerprint">上传指纹模版</a>”</p>
+<h2 id="-">控制命令</h2>
+<h3 id="-">执行系统命令</h3>
+<p>服务器下发客户端支持的操作系统命令，客户端将执行结果发送到服务器上，命令格式如下</p>
+<pre><code>C:${CmdID}:SHELL${SP}${SystemCmd}
+说明：
+使用SHELL描述该命令
+${SystemCmd}：操作系统命令，比如，当客户端为linux系统，支持ls等
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}${LF}SN=${SerialNumber}${LF}Return=${XXX}${LF}CMD=Shell${LF}FILENAME=shellout.txt${LF}Content=${XXX}
+说明：
+Return=${XXX}：值为系统命令的返回值
+Content=${XXX}：值为系统命令的输出内容
+</code></pre><h3 id="-">发送客户端的信息到服务器</h3>
+<p>服务器获取客户端配置等信息，命令格式如下</p>
+<pre><code>C:${CmdID}:INFO
+说明：
+使用INFO描述该命令
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=INFO${LF}${Key}=${Value}${LF}${Key}=${Value}${LF}${Key}=${Value}${LF}${Key}=${Value}……
+说明：
+CMD=INFO后面跟着具体的客户端配置信息，以键值对的形式组成
+</code></pre><h3 id="-">检查数据更新</h3>
+<p>要求客户端从服务器读取配置信息，详见&quot;<a href="#initinfo">初始化信息交换</a>&quot;，并根据时间戳重新上传对应的数据到服务器，目前只支持服务器将时间戳重置为0，比如设置参数Stamp=0，客户端读取配置参数之后将重新<a href="#uploadattlog">上传考勤记录</a>，命令格式如下</p>
+<pre><code>C:${CmdID}:CHECK
+说明：
+使用CHECK描述该命令
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=CHECK
+</code></pre><h3 id="-">清除考勤记录</h3>
+<p>清除客户端的考勤记录，命令格式如下</p>
+<pre><code>C:${CmdID}:CLEAR${SP}LOG
+说明：
+使用CLEAR${SP}LOG描述该命令
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=CLEAR_LOG
+说明：
+CMD=CLEAR_LOG：使用CLEAR_LOG描述该命令
+</code></pre><h3 id="-">清除考勤照片</h3>
+<p>清除客户端的考勤照片，命令格式如下</p>
+<pre><code>C:${CmdID}:CLEAR${SP}PHOTO
+说明：
+使用CLEAR${SP}PHOTO描述该命令
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=CLEAR_PHOTO
+说明：
+CMD=CLEAR_PHOTO：使用CLEAR_PHOTO描述该命令
+</code></pre><h3 id="-">清除全部数据</h3>
+<p>清除客户端的全部数据，命令格式如下</p>
+<pre><code>C:${CmdID}:CLEAR${SP}DATA
+说明：
+使用CLEAR${SP}DATA描述该命令
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=CLEAR_DATA
+说明：
+CMD=CLEAR_DATA：使用CLEAR_DATA描述该命令
+</code></pre><h3 id="-">设置客户端的选项</h3>
+<p>设置客户端的配置信息，命令格式如下</p>
+<pre><code>C:${CmdID}:SET${SP}OPTION${SP}${Key}=${Value}
+说明：
+使用SET${SP}OPTION描述该命令
+以键值对的形式设置配置信息，该命令只支持单一配置信息的设置
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=SET${SP}OPTION
+</code></pre><h3 id="-">重新启动客户端</h3>
+<p>重启客户端，命令格式如下</p>
+<pre><code>C:${CmdID}:REBOOT
+说明：
+使用REBOOT描述该命令
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=REBOOT
+</code></pre><h3 id="-">客户端重新刷新选项</h3>
+<p>客户端重新加载配置信息，命令格式如下</p>
+<pre><code>C:${CmdID}:RELOAD${SP}OPTIONS
+说明：
+使用RELOAD${SP}OPTIONS描述该命令
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=RELOAD${SP}OPTIONS
+</code></pre><p><span id='enrollfp' /></p>
+<h3 id="-">登记用户指纹</h3>
+<p>由服务器发起，在客户端登记指纹，命令格式如下</p>
+<pre><code>C:${CmdID}:ENROLL_FP${SP}PIN=${XXX}${HT}FID=${XXX}${HT}RETRY=${XXX}${HT}OVERWRITE=${XXX}
+说明：
+使用ENROLL_FP描述该命令
+PIN=${XXX}：登记的工号
+FID=${XXX}：登记的指纹编号
+RETRY=${XXX}：若登记失败，需重试的次数
+OVERWRITE=${XXX}：是否覆盖指纹，0表示相应用户存在指纹则不覆盖指纹返回错误信息，1表示相应用户存在指纹也覆盖该指纹
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=ENROLL_FP
+</code></pre><h3 id="-">检查并传送新数据</h3>
+<p>客户端立即检查是否有新的数据，并立即把新数据传送到服务器上，命令格式如下</p>
+<pre><code>C:${CmdID}:LOG
+说明：
+使用LOG描述该命令
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=LOG
+</code></pre><h3 id="-">输出打开门锁信号</h3>
+<p>门禁设备输出门锁打开信号，命令格式如下</p>
+<pre><code>C:${CmdID}:AC_UNLOCK
+说明：
+使用AC_UNLOCK描述该命令
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=AC_UNLOCK
+</code></pre><h3 id="-">取消报警信号输出</h3>
+<p>门禁设备取消报警信号输出，命令格式如下</p>
+<pre><code>C:${CmdID}:AC_UNALARM
+说明：
+使用AC_UNALARM描述该命令
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=AC_UNALARM
+</code></pre><h3 id="-">取客户端内文件</h3>
+<p>客户端将服务器指定的文件发送到服务器上，命令格式如下</p>
+<pre><code>C:${CmdID}:GetFile${SP}${FilePath}
+说明：
+使用GetFile描述该命令
+${FilePath}：客户端系统内的文件
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}${LF}SN=${SerialNumber}${LF}FILENAME=${XXX}${LF}CMD=GetFile${LF}Return=${XXX}${LF}Content=${BinaryData}
+说明：
+Return=${XXX}：返回文件的大小
+Content=${BinaryData}：传输文件的二进制数据流
+</code></pre><h3 id="-">发送文件到客户端</h3>
+<p>要求设备下载服务器上的文件，并保存到指定的文件中（如果是tgz文件，下载后将自动解压到FilePath指定目录，未指定目录则解压到/mnt/mtdblock目录，其他格式文件需指定文件保存路径及文件名）。该文件必须由服务器以HTTP方式提供，并给出获取该文件的URL，如果URL以&quot;<a href="http://&quot;开头，设备将把URL看着是完整的URL地址，否则，设备将把本服务器的/iclock/地址附加到指定的URL上，命令格式如下">http://&quot;开头，设备将把URL看着是完整的URL地址，否则，设备将把本服务器的/iclock/地址附加到指定的URL上，命令格式如下</a></p>
+<pre><code>C:${CmdID}:PutFile${SP}${URL}${HT}${FilePath}
+说明：
+使用GetFile描述该命令
+${URL}：服务器上需要下载的文件地址
+${FilePath}：文件存入客户端的目标路径
+示例1：PutFile file/fw/X938/main.tgz    main.tgz或PutFile file/fw/X938/main.tgz将要求设备下载 http://server/iclock/file/fw/X938/main.tgz并解压缩main.tgz到/mnt/mtdblock文件夹中
+示例2：PutFile file/fw/X938/main.tgz    /mnt/将要求设备下载 http://server/iclock/file/fw/X938/main.tgz并解压缩main.tgz到/mnt/文件夹中
+示例3：PutFile file/fw/X938/ssruser.dat /mnt/mtdblock/ssruser.dat将要求设备下载 http://server/iclock/file/fw/X938/ssruser.dat并保持为/mnt/mtdblock/ssruser.dat文件
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}${LF}Return=${XXX}${LF}CMD=PutFile
+说明：
+Return=${XXX}：返回文件的大小
+</code></pre><h3 id="-">考勤数据自动校对功能</h3>
+<p>由服务器下发校对某时间段之间的考勤记录，考勤设备上传开始时间，截止时间及记录总数，由服务器实现校对，命令格式如下</p>
+<pre><code>C:${CmdID}:VERIFY${SP}SUM${SP}ATTLOG${SP}StartTime=${XXX}${HT}EndTime=${XXX}
+说明：
+使用VERIFY${SP}SUM描述该命令
+StartTime=${XXX}：服务器下发起始时间，格式为：XXXX-XX-XX XX:XX:XX，如2015-07-29 00:00:00
+EndTime=${XXX}：服务器下发截止时间，格式为：XXXX-XX-XX XX:XX:XX，如2015-07-29 00:00:00
+</code></pre><p>命令执行结果如何回复见<a href="#replycmd">回复命令</a>功能，Return返回值见<a href="#appendix1">附录1</a>，返回内容格式如下：</p>
+<pre><code>ID=${XXX}&amp;Return=${XXX}&amp;CMD=VERIFY${SP}SUM&amp;StartTime=${XXX}&amp;EndTime=${XXX}&amp;AttlogSum=${XXX}
+说明：
+AttlogSum=${XXX}：在起止时间段内的考勤记录总数
+</code></pre><p><span id='replycmd' /></p>
+<h1 id="-">回复命令</h1>
+<p>客户端在<a href="#downloadcmd">获取到服务器下发的命令</a>后，需要对相应的命令进行回复</p>
+<p>客户端请求消息</p>
+<pre><code>POST /iclock/devicecmd?SN=${SerialNumber}
+Host: ${ServerIP}:${ServerPort}
+Content-Length: ${XXX}
+……
+
+${CmdRecord}
+</code></pre><p>注释：</p>
+<pre><code>HTTP请求方法使用：GET方法
+URI使用：/iclock/devicecmd
+HTTP协议版本使用：1.1
+客户端配置信息：
+    SN：${Required}表示客户端的序列号
+Host头域：${Required}
+Content-Length头域：${Required}
+其他头域：${Optional}
+响应实体：${CmdRecord}，回复的命令记录，回复的内容都会包含ID\Return\CMD信息，含义如下
+    ID：服务器下发命令的命令编号
+    Return：客户端执行命令之后的返回结果
+    CMD：服务器下发命令的命令描述
+    少部分回复会包含其他信息，具体回复内容格式请看各个命令的说明
+    多条命令回复记录之间使用${LF}连接
+</code></pre><p>服务器正常响应消息</p>
+<pre><code>HTTP/1.1 200 OK
+Date: ${XXX}
+Content-Length: 2
+……
+
+OK
+</code></pre><p>注释：</p>
+<pre><code>HTTP状态行：使用标准的HTTP协议定义
+HTTP响应头域：
+    Date头域：${Required}使用该头域来同步服务器时间，并且时间格式使用GMT格式，如Date: Fri, 03 Jul 2015 06:53:01 GMT
+    Content-Length头域：根据HTTP 1.1协议，一般使用该头域指定响应实体的数据长度，如果是在不确定响应实体的大小时，也支持Transfer-Encoding: chunked，Content-Length及Transfer-Encoding头域均是HTTP协议的标准定义，这里就不在详述
+</code></pre><p>示例</p>
+<pre><code>客户端请求：
+POST /iclock/devicecmd?SN=0316144680030 HTTP/1.1
+Host: 58.250.50.81:8011
+User-Agent: iClock Proxy/1.09
+Connection: close
+Accept: */*
+Content-Length: 143
+
+ID=info8487&amp;Return=0&amp;CMD=DATA
+ID=info8488&amp;Return=0&amp;CMD=DATA
+ID=info8489&amp;Return=0&amp;CMD=DATA
+ID=info7464&amp;Return=0&amp;CMD=DATA
+ID=fp7464&amp;Return=0&amp;CMD=DATA
+
+服务器响应：
+HTTP/1.1 200 OK
+Server: nginx/1.6.0
+Date: Tue, 30 Jun 2015 01:24:48 GMT
+Content-Type: text/plain
+Content-Length: 2
+Connection: close
+Pragma: no-cache
+Cache-Control: no-store
+
+OK
+</code></pre><p><span id='remoteatt' /></p>
+<h1 id="-">异地考勤</h1>
+<p>当用户出差到异地需要考勤时，考勤机内无该用户信息，用户可以通过异地考勤方式考勤。目前的应用场景：用户通过考勤机键盘直接输入工号，按OK键后，考勤机向服务器请求下发该用户全部信息（基本信息、指纹信息）。之后，用户考勤；下载用户信息后，在考勤机内保存一定时间。由参数确定保存时间，一段时间后删除该用户信息</p>
+<p>客户端请求消息</p>
+<pre><code>GET /iclock/cdata?SN=${SerialNumber}&amp;Table=RemoteAtt&amp;PIN=${XXX}
+Host: ${ServerIP}:${ServerPort}
+……
+</code></pre><p>注释：</p>
+<pre><code>HTTP请求方法使用：GET方法
+URI使用：/iclock/cdata
+HTTP协议版本使用：1.1
+客户端配置信息：
+    SN：${Required}表示客户端的序列号
+    Table=RemoteAtt：表示异地考勤获取用户信息
+    PIN=${XXX}：需要获取的工号信息
+Host头域：${Required}
+其他头域：${Optional}
+</code></pre><p>服务器正常响应消息</p>
+<pre><code>当存在用户信息时，回复信息如下：
+HTTP/1.1 200 OK
+Date: ${XXX}
+Content-Length: ${XXX}
+……
+
+DATA${SP}UPDATE${SP}USERINFO${SP}PIN=${XXX}${HT}Name=${XXX}${HT}Passwd=${XXX}${HT}Card=${XXX}${HT}Grp=${XXX}${HT}TZ=${XXX}${HT}Pri=${XXX}
+DATA${SP}UPDATE${SP}FINGERTMP${SP}PIN=${XXX}${HT}FID=${XXX}${HT}Size=${XXX}${HT}Valid=${XXX}${HT}TMP=${XXX}
+</code></pre><p>注释：响应实体的数据多条记录之间使用${LF}连接，具体数据格式见<a href="#downloaduser">下发用户信息</a>与<a href="#downloadfingerprint">下发指纹模板</a></p>
+<p><span id='authverify' /></p>
+<h1 id="-">后台比对</h1>
+<p>客户端将信息发送到后台服务器进行比对，服务器收到设备验证请求后，根据请求信息进行比对，如果比对成功，返回验证成功确认消息、用户基本信息和照片。如果失败返回验证失败消息。如果服务器中不存在该用户照片信息，则服务器不下发PhotoSize，Photo字段。考勤机不保存用户照片和用户信息</p>
+<p>客户端请求消息</p>
+<pre><code>POST /iclock/cdata?SN=${SerialNumber}&amp;AuthType=${XXX}
+Host: ${ServerIP}:${ServerPort}
+Content-Length: ${XXX}
+……
+
+${DataRecord}
+</code></pre><p>注释：</p>
+<pre><code>HTTP请求方法使用：POST方法
+URI使用：/iclock/cdata
+HTTP协议版本使用：1.1
+客户端配置信息：
+    SN：${Required}表示客户端的序列号
+    AuthType=${XXX}：表示验证类型，值为CARD表示刷卡验证，值为FP表示指纹验证
+Host头域：${Required}
+Content-Length头域：${Required}
+其他头域：${Optional}    
+请求实体：${DataRecord}，需要比对的信息，数据格式如下
+    PIN=${XXX}${HT}Size=${XXX}${HT}TMP=${XXX}
+
+    PIN=${XXX}：用户工号，非0时，进行1:1验证，0时，进行1:N验证
+    Size=${XXX}：TMP模版base64编码之后的长度
+    TMP=${XXX}：传输模版时，需要对原始二进制模版进行base64编码
+</code></pre><p>服务器正常响应消息</p>
+<pre><code>验证成功
+HTTP/1.1 200 OK
+Date: ${XXX}
+Content-Length: ${XXX}
+……
+
+AUTH=Success${HT}PIN=${XXX}${HT}Name=${XXX}${HT}Pri=${XXX}${HT}Grp=${XXX}${HT}TZ=${XXX}${HT}PhotoSize=${XXX}${HT}Photo=${XXX}
+
+注释：
+    AUTH=Success：验证成功
+    PIN=${XXX}：用户工号
+    Name=${XXX}：用户姓名
+    Pri=${XXX}：用户权限
+    Grp=${XXX}：用户组
+    TZ=${XXX}：用户时间段
+    PhotoSize=${XXX}：用户照片大小
+    Photo=${XXX}：传输用户照片时，需要对原始二进制数据进行base64编码
+</code></pre><p>各个字段格式含义参见<a href="#downloaduser">下发用户信息</a></p>
+<pre><code>验证失败
+HTTP/1.1 200 OK
+Date: ${XXX}
+Content-Length: ${XXX}
+……
+
+AUTH=Failed
+
+注释：
+    AUTH=Failed：验证失败
+</code></pre><p><span id='appendix1' /></p>
+<h1 id="-1">附录1</h1>
+<table>
+<thead>
+<tr>
+<th>错误码</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>成功</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="#enrollfp">登记用户指纹</a>，对应用户的指纹已经存在</td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="#enrollfp">登记用户指纹</a>，登记失败，通常由于指纹质量太差，或者三次按的指纹不一致</td>
+</tr>
+<tr>
+<td>5</td>
+<td><a href="#enrollfp">登记用户指纹</a>，登记的指纹已经在指纹库中存在</td>
+</tr>
+<tr>
+<td>6</td>
+<td><a href="#enrollfp">登记用户指纹</a>，取消登记</td>
+</tr>
+<tr>
+<td>7</td>
+<td><a href="#enrollfp">登记用户指纹</a>，设备忙，无法登记</td>
+</tr>
+<tr>
+<td>-1</td>
+<td>参数错误</td>
+</tr>
+<tr>
+<td>-2</td>
+<td>传输用户照片数据与给定的Size不匹配</td>
+</tr>
+<tr>
+<td>-3</td>
+<td>读写错误</td>
+</tr>
+<tr>
+<td>-9</td>
+<td>传输的模板数据与给定的Size不匹配</td>
+</tr>
+<tr>
+<td>-10</td>
+<td>设备中不存在PIN所指定的用户</td>
+</tr>
+<tr>
+<td>-11</td>
+<td>非法的指纹模板格式</td>
+</tr>
+<tr>
+<td>-12</td>
+<td>非法的指纹模板</td>
+</tr>
+<tr>
+<td>-1001</td>
+<td>容量限制</td>
+</tr>
+<tr>
+<td>-1002</td>
+<td>设备不支持</td>
+</tr>
+<tr>
+<td>-1003</td>
+<td>命令执行超时</td>
+</tr>
+<tr>
+<td>-1004</td>
+<td>数据与设备配置不一致</td>
+</tr>
+<tr>
+<td>-1005</td>
+<td>设备忙</td>
+</tr>
+<tr>
+<td>-1006</td>
+<td>数据太长</td>
+</tr>
+<tr>
+<td>-1007</td>
+<td>内存错误</td>
+</tr>
+</tbody>
+</table>
+
+          	</article>
+        </div>
+		</div>
+  </body>
+</html>
+<script type="text/javascript" src="toc/js/jquery-1.4.4.min.js"></script>
+<script type="text/javascript" src="toc/js/jquery.ztree.all-3.5.min.js"></script>
+<script type="text/javascript" src="toc/js/ztree_toc.js"></script>
+<script type="text/javascript" src="toc_conf.js"></script>
+
+<SCRIPT type="text/javascript" >
+<!--
+$(document).ready(function(){
+    var css_conf = eval(markdown_panel_style);
+    $('#readme').css(css_conf)
+    
+    var conf = eval(jquery_ztree_toc_opts);
+		$('#tree').ztree_toc(conf);
+});
+//-->
+</SCRIPT>

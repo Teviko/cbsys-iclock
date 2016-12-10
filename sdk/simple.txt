@@ -1,0 +1,124 @@
+<%
+Response.ContentType="text/plain"
+Response.write("OK")
+%>
+2009-01-03 20:57:22,010 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <0066688490001>
+2009-01-03 20:57:22,025 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <OpStamp:::289515406>
+2009-01-03 20:57:23,507 INFO [com.chinark.imanager.iclock.service.ClockService] - <OPLOG 0	0	289515406	0	0	0	0>
+
+2009-01-03 20:57:25,840 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <0066688490001>
+2009-01-03 20:57:25,845 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <Stamp:::289515042>
+
+
+2009-01-03 17:48:43,311 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - </iclock/cdata>
+2009-01-03 17:48:43,311 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <0066688490001>
+2009-01-03 17:48:43,311 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <all>
+Hibernate: /* criteria query */ select this_.id as id46_0_, this_.serialNumber as serialNu2_46_0_, this_.deviceName as deviceName46_0_, this_.deviceModel as deviceMo4_46_0_, this_.deviceLocation as deviceLo5_46_0_, this_.lastOnlineTime as lastOnli6_46_0_, this_.deviceNumber as deviceNu7_46_0_, this_.transferTime as transfer8_46_0_, this_.refreshInterval as refreshI9_46_0_, this_.transferSignRecordsStamp as transfe10_46_0_, this_.transferUserRecordsStamp as transfe11_46_0_, this_.status as status46_0_, this_.staffNumber as staffNu13_46_0_, this_.fingerprintNumber as fingerp14_46_0_, this_.attendanceRecordsNumber as attenda15_46_0_, this_.createTime as createTime46_0_ from t_attendance_device this_ where this_.serialNumber=?
+Hibernate: /* update com.chinark.imanager.workattendance.attendancedevice.entity.AttendanceDevice */ update t_attendance_device set serialNumber=?, deviceName=?, deviceModel=?, deviceLocation=?, lastOnlineTime=?, deviceNumber=?, transferTime=?, refreshInterval=?, transferSignRecordsStamp=?, transferUserRecordsStamp=?, status=?, staffNumber=?, fingerprintNumber=?, attendanceRecordsNumber=?, createTime=? where id=?
+2009-01-03 17:48:43,684 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <GET OPTION FROM: 0066688490001
+Stamp=null
+OpStamp=null
+ErrorDelay=120
+Delay=60
+TransTimes=null
+TransInterval=2
+TransFlag=1111000000
+Realtime=1
+Encrypt=0>
+2009-01-03 17:48:51,629 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - </iclock/cdata>
+2009-01-03 17:48:51,629 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <0066688490001>
+2009-01-03 17:48:51,636 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <OpStamp:::289504127>
+2009-01-03 17:48:53,403 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <USER PIN=4	Name=	Pri=0	Passwd=	Card=[0000000000]	Grp=1	TZ=00000000>
+2009-01-03 17:48:53,404 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <USER PIN=1	Name=	Pri=0	Passwd=	Card=[0000000000]	Grp=1	TZ=00000000>
+2009-01-03 17:48:53,404 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <USER PIN=2	Name=	Pri=0	Passwd=	Card=[0000000000]	Grp=1	TZ=00000000>
+2009-01-03 17:48:53,404 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <USER PIN=3	Name=	Pri=0	Passwd=	Card=[0000000000]	Grp=1	TZ=00000000>
+2009-01-03 17:48:58,373 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - </iclock/cdata>
+2009-01-03 17:48:58,374 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <0066688490001>
+2009-01-03 17:48:58,379 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <OpStamp:::289504127>
+2009-01-03 17:48:59,572 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <FP PIN=4	FID=0	Size=370	Valid=1	TMP=ocobgZM+NMEfNM43wSJLrk1BCBY9cEEFmLo5gWkezlbBCpaqI8EL5E1qwQmUSj2BEy/AQEEMKR08gQgJyDXBFUGWN8EJBSs7QQ94RRwBA8O4OgE6Z8QyARM+OCsBDlTAJUEMSj8eAQlPLB2BCWGjE4EIYxo2QQp2UTyBVzTVOAEs1lVPgQuJ1EEBH4IstE4OEhfAyXh4eH54eOLDb6G9ywrAwm6im928DsDCbKOs3cyrwMFrpJrN/KuawMFmpKze7bqqFMB+YqWq3e/ruqnAfl+hqu11BaL8u6nAfl6hmt10BQ6i27qZwH5boYu+cQURouupmMB+WKGZq2oIF6HZmYHAflahiXhVH6F5mIEhwH5TgU9MQS0komiHicB+TqGZQjsvohRoeCLAfkyhmVI7MKITZ3ghwH5NoZlUPjIooSaHIMDBUKGGYjQloSZ5HcDCU1JRTj4aoWeYGMDDVFXCEBETEuAAAAAAAAAAAAAAAAAAAA==>
+2009-01-03 17:48:59,572 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <FP PIN=1	FID=0	Size=372	Valid=1	TMP=ocoggY6oKAEI4ykrgQzqUkPBDzNUPMEROD5TQRB8QVjBIYBGPMEQUc8ewQjLvC1BB+C8VIEQFC9LQQkHOWGBDoSxHIEJ3zVdQQiDMFeBCYEdN0EGAJxSQQoKQkPBF2JFMAENV041gRBKwx/BB1Q2IcEIZag1QQhvJCkBDWseToEGfRNBgQkImV7BFwuva0EHD7diwQsVpUbBBHdIR0EYSp9fQQqBMaTxExIXwMV4wnh+eHh448Rsotzry8DDa6O83Lq6wMNto7y7mdsMwMJppKvcuYyqDMDCaaSa7LibugrAwmakq9ysy6sOwMJnpLu7zMvLEMDCZ6Sru93MyxTAwWWlmave+szZF8DBYaSby8783BodH8DBW6Sc7b7//yAiJsDBV6F732lxdwkYHyctM8DBVKJpnZ9oLionKjPAwk+iqIYyLywuMTrAwk6ip1QTMSUrMjjAwk+BoREQJx4fK8DDUk9HPzUoHxvgAAAAAAAAAAAA>
+2009-01-03 17:48:59,572 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <FP PIN=2	FID=0	Size=416	Valid=1	TMP=ocoggpVCWsEyNsVXARo6xWyBB6vGcIEJssZxgQmrJChBD2inK4EJbLhFwRQhM16BBSJFdcEMNUJuAQo0sSyBDOoycoEGIklywQStNWcBBpZVTQEUXKohQQjjP1yBH5aRToEFCqxtQQaZPioBGc+YKAEEBUNDARc/xibBDzA6I4EPUB45QQV8ijUBCX+PVcEHghFGQQWBJSiBDuusIIELY78vwS47NCSQDKxkMg4SF8DFBwkKxHjAxAOhy6oRwMN3ory6qxPAwnWjubq6uxTAwnKj+bmbrBPAwWhud6O5uru6E8DBZ2pyAqOqvKqqwH5mpZnv3L24u8B+ZKWK7t7NybzAfmClnN7f3tvMwH5dXmFncKPu/9y6IsB+WltdYmx3BgwVofq5I8B+VqGpr3UKEqL+qZjAflGhl811Ehyiu5mYJsB+TKF2qjQio8eJuGjAfkSmd2UTh3aIaMDBPqVkVYuIZocwwME4pWRX7Fl4hzXAwTMxKyMYdUaiYWeHOMDCLCYdDGpZU0qhR2fAwyAXBmhcoSN2SeAAAAAAAAAAAAA=>
+2009-01-03 17:48:59,574 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <FP PIN=3	FID=0	Size=292	Valid=1	TMP=ocoTgpc5BwEYPjsDgQtAtx8BHhpHPEERNzIxAQodw0GBDCpNNUETTEA7wQ0vSy/BFrxKK8EmaMYVwREbPh6BEzM1HAETeJUxAQqJ0EVBHDxHL0EXPixKwQUZq0hBBo0tPQEEjC7kDgauBHIJEhfAznjiwg0PERPAwQmiu7qXwMEGoszKqBXAwQWj3NqYl8DBBaPdyZmYwMEFo93JqKnAfnSj/+yZqBnAfm8CC6Ptmqd2wH5pdwsTouqZhRfAfltyDRei6ph1GcB+RkUdo6yXdmfAfjs2LaNIdmZYwH40pEWKdEVnwH4tKSgsN6JjJFUewH4lIRwXQ6IhA0UhwMEeGgxXSD80KyQhwMIWCGNSSDwrHxvAwwloWE9IKBjgAAAAAAAAAA==>
+2009-01-03 17:49:01,937 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - </iclock/cdata>
+2009-01-03 17:49:01,937 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <0066688490001>
+2009-01-03 17:49:01,952 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <Stamp:::289503453>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-29 19:08:16	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-29 19:10:16	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-29 19:10:22	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-29 19:11:35	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-29 19:11:40	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-29 19:12:09	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 09:32:58	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 09:33:05	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 09:35:42	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 09:36:05	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 09:36:39	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 10:56:39	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 10:56:49	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 10:57:11	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 10:57:20	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 10:57:45	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 10:57:47	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 10:57:50	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 10:58:34	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 10:58:48	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 11:04:45	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 11:46:12	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 11:46:14	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:47:17	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:47:31	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:47:48	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:47:56	0	1>
+2009-01-03 17:49:02,635 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:49:07	0	1>
+2009-01-03 17:49:02,636 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:49:15	0	1>
+2009-01-03 17:49:02,636 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:49:22	0	1>
+2009-01-03 17:49:02,636 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 11:51:55	0	1>
+2009-01-03 17:49:02,636 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:54:04	0	1>
+2009-01-03 17:49:02,636 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:54:16	0	1>
+2009-01-03 17:49:02,636 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:54:37	0	1>
+2009-01-03 17:49:02,636 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:54:47	0	1>
+2009-01-03 17:49:02,636 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:56:19	0	1>
+2009-01-03 17:49:02,636 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:56:23	0	1>
+2009-01-03 17:49:02,636 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:56:27	0	1>
+2009-01-03 17:49:02,636 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:56:36	0	1>
+2009-01-03 17:49:02,636 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:56:40	0	1>
+2009-01-03 17:49:02,636 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:56:54	0	1>
+2009-01-03 17:49:02,636 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 11:56:59	0	1>
+2009-01-03 17:49:02,637 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 12:09:26	0	1>
+2009-01-03 17:49:02,637 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 12:09:41	0	1>
+2009-01-03 17:49:02,637 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <4	2008-12-30 14:20:49	0	1>
+2009-01-03 17:49:02,637 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <2	2008-12-30 14:26:36	0	1>
+2009-01-03 17:49:02,637 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <2	2008-12-30 14:26:41	0	1>
+2009-01-03 17:49:02,637 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 14:26:56	0	1>
+2009-01-03 17:49:02,637 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 14:26:59	0	1>
+2009-01-03 17:49:02,637 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 14:27:05	0	1>
+2009-01-03 17:49:02,637 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <2	2008-12-30 14:27:10	0	1>
+2009-01-03 17:49:02,637 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <2	2008-12-30 14:27:14	0	1>
+2009-01-03 17:49:03,280 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <2	2008-12-30 14:27:27	0	1>
+2009-01-03 17:49:03,280 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <2	2008-12-30 14:27:38	0	1>
+2009-01-03 17:49:03,281 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 15:09:35	0	1>
+2009-01-03 17:49:03,281 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 15:10:13	0	1>
+2009-01-03 17:49:03,281 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 15:11:14	0	1>
+2009-01-03 17:49:03,281 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 15:11:34	0	1>
+2009-01-03 17:49:03,281 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 15:12:10	0	1>
+2009-01-03 17:49:03,282 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 15:12:13	0	1>
+2009-01-03 17:49:03,282 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 15:13:16	0	1>
+2009-01-03 17:49:03,282 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 15:13:28	0	1>
+2009-01-03 17:49:03,282 INFO [com.chinark.imanager.iclock.web.servlet.CDataServlet] - <1	2008-12-30 15:17:46	0	1>
+
+
+
+
+
+
+
+
+OpStamp:::350154520
+
+PLOG 30 0       2010-11-23 17:08:39     13      0       0       0
+USER PIN=13      Name=   Pri=0   Passwd=12345    Card=[0000000000]       Grp=1   TZ=00000000
+OPLOG 6  0       2010-11-23 17:08:40     13      0       0       413
+FP PIN=13        FID=0   Size=414        Valid=1 TMP=ocokgba5NQETuboxgRWyOzwBDsQ8NwEcxD1HAQ5Sv0nBDEw3Z8EJOLpigQtBu2SBCz6tSsEqOUlNwQdQrkHBM
+UfMRgEIxUg1ASF/RC6BVAW9MsFTvstAgRJaLlPBEzmkSUEXFsE4gR1tw1SBBEedLkEL2RUxAQneCUmBDAa0OMEMwI4sARndsD0BEU2bL4EMW5A9QQ1rI1nBFSI/MAFQrEorASaUQSwBIxs/IkENODYZQQpFLSLBCEtKVOsQEBbGbaLf3/3AxWmj3u3928DEYWqj/uzc28DDXWFro+/tzMsdwMNeYWlxo+
+/sy7vAwl6hi/51BaL+y7rAwluhm/91BQwUoeuqwMJaWl1ja3QEDBah+6nAw1daYWp0BxAbofqYwMNVWF1pdg4bI6HJiMDDUFJXYHYbJqHZdynAw0pLTlFGMKKZdWbAw0WkiqYiZFUtwMJCpHe8pUQ0MsDCPz09QkuihUQzNMDDOTpDT6JVRTM1wMQ0SlZNolNUNcDFXFZNoVRVPcDFaVtPoTVmQMDFa19
+SoRlWwMZpXFFRTeAA
