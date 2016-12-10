@@ -1,7 +1,8 @@
 spring.datasource:
-    url: jdbc:mysql://211.103.91.80:3306/iclock?useUnicode=true&characterEncoding=utf8&autoReconnect=true
-    username: albertzl
-    password: echo780710
+    url: jdbc:mysql://192.168.0.1:3306/iclock?useUnicode=true&characterEncoding=utf8&autoReconnect=true
+    username: user
+    password: passwd
+    
     driverClassName: com.mysql.jdbc.Driver
     testOnBorrow: true
     validationQuery: SELECT 1
