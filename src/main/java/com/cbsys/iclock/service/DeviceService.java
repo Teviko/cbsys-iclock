@@ -156,6 +156,10 @@ public class DeviceService {
 						+ (StringUtils.isNotBlank(d.getDefaultWorkCode()) ? ("        default_work_code: " + d.getDefaultWorkCode()) : ""));
 				continue;
 			}
+			if ((di.getDefaultWorkCode() == null && StringUtils.isNotBlank(d.getDefaultWorkCode()))
+					|| (di.getDefaultWorkCode() != null && !di.getDefaultWorkCode().equals(d.getDefaultWorkCode())))
+				logger.info("update  device  into CACHE：" + d.getSn()	+ (StringUtils.isNotBlank(d.getDefaultWorkCode()) ? ("        default_work_code: " + d.getDefaultWorkCode()) : ""));
+			di.setDefaultWorkCode(d.getDefaultWorkCode());
 			di.setOffsiteAtt(d.getOffsiteAtt());
 			di.setDbLastOnlineTime(d.getDbLastOnlineTime());
 			di.setDeviceMode(d.getDeviceMode());
