@@ -65,7 +65,7 @@ public class DeviceService {
 
 	public void checkTimeZone(DeviceInfo di, AttDevice device, boolean needResetOption) {
 		int tzOffset = ClockUtils.getClockTZOffset(di.getTzId());
-		if (tzOffset < 0) {
+		if (tzOffset == 99) {
 			logger.info("Check TimeZone Offset Wrong: " + tzOffset + " tzId: " + di.getTzId());
 			if (needResetOption)
 				makeOptionsCMD(device, "TZAdj", "");

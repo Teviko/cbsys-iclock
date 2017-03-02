@@ -21,7 +21,7 @@ public class ClockUtils {
 
 	public static int getClockTZOffset(String tzId) {
 		if (StringUtils.isBlank(tzId))
-			return -1;
+			return 99;
 		/*ZoneId systemTZ = ZoneId.systemDefault();
 		if (systemTZ.getId().equals(tzId))
 			return 0;*/
@@ -59,7 +59,8 @@ public class ClockUtils {
 		return OffsetDateTime.ofInstant(Instant.ofEpochMilli(utcTime), ZoneOffset.of(tz)).format(FormatterToTMS);
 	}
 
-	/*	public static void main(String[] args) {
+	/*public static void main(String[] args) {
+		System.out.println(getClockTZOffset("Pacific/Rarotonga"));
 			//	String[] ids = TimeZone.getAvailableIDs();
 			//	System.out.println(ids.length);
 			//	System.out.println(TimeZone.getTimeZone("NZ").getOffset(System.currentTimeMillis()) / 1000 / 60 / 60);
@@ -80,5 +81,5 @@ public class ClockUtils {
 			//	System.out.println(t2);
 			//	System.out.println(Instant.ofEpochMilli(t2).toString());
 			//	System.out.println(transToOffsetDatetime(t, 13));
-		}*/
+	}*/
 }
