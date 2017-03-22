@@ -279,8 +279,7 @@ public class AttendanceConstants {
 	public static String DEVICE_INFO_TransFlag = "TransFlag";
 	public static String DEVICE_INFO_Realtime = "Realtime";
 	public static String DEVICE_INFO_Encrypt = "Encrypt";
-	public static String DEVICE_INFO_TimeZoneclock = "TimeZoneclock";
-	public static String DEVICE_INFO_Time_Zone = "Time_Zone";
+	public static String DEVICE_INFO_Time_Zone = "TimeZone";
 	public static String DEVICE_INFO_TransFlag_Default = "111111111";
 
 

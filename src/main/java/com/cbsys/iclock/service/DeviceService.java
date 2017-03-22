@@ -67,17 +67,17 @@ public class DeviceService {
 		int tzOffset = ClockUtils.getClockTZOffset(di.getTzId());
 		if (tzOffset == 99) {
 			logger.info("Check TimeZone Offset Wrong: " + tzOffset + " tzId: " + di.getTzId());
-			if (needResetOption)
-				makeOptionsCMD(device, "TZAdj", "");
+			return;
 		}
 		if (di.getTimeZoneOffset() == tzOffset)
 			return;
 		if (device == null)
 			device = attDeviceDao.findBySerialNumber(di.getSn());
-		makeOptionsCMD(device, "TZAdj", String.valueOf(tzOffset)); //set device to local time-zone
+		//makeOptionsCMD(device, "TZAdj", String.valueOf(tzOffset)); //set device to local time-zone
 		device.setTimeZoneOffset(tzOffset);
 		di.setTimeZoneOffset(tzOffset);
-		di.setCmds(di.getCmds() + 2);
+		saveNewCMDWithoutParam(device, AttendanceConstants.TYPE_CMD_REBOOT);
+		di.setCmds(di.getCmds() + 1);
 	}
 
 	public AttDeviceCMD makeOptionsCMD(AttDevice device, String key, String value) {
@@ -165,6 +165,7 @@ public class DeviceService {
 			di.setDeviceMode(d.getDeviceMode());
 			di.setDeviceType(d.getDeviceType());
 			di.setTimeZoneOffset(d.getTimeZoneOffset());
+			di.setTzId(d.getTzId());
 			Long count = cmdCounts.get(d.getSn());
 			if (count == null)
 				count = 0l;

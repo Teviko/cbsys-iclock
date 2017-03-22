@@ -7,7 +7,6 @@ import static com.cbsys.iclock.AttendanceConstants.DEVICE_INFO_OpStamp;
 import static com.cbsys.iclock.AttendanceConstants.DEVICE_INFO_Realtime;
 import static com.cbsys.iclock.AttendanceConstants.DEVICE_INFO_SN;
 import static com.cbsys.iclock.AttendanceConstants.DEVICE_INFO_Stamp;
-import static com.cbsys.iclock.AttendanceConstants.DEVICE_INFO_TimeZoneclock;
 import static com.cbsys.iclock.AttendanceConstants.DEVICE_INFO_Time_Zone;
 import static com.cbsys.iclock.AttendanceConstants.DEVICE_INFO_TransFlag;
 import static com.cbsys.iclock.AttendanceConstants.DEVICE_INFO_TransFlag_Default;
@@ -74,8 +73,8 @@ public class CDataEndpoint {
 
 	@RequestMapping(value = "/cdata", method = RequestMethod.POST)
 	public String updateData(@RequestBody(required = false) String body, @RequestParam("SN") String sn,
-			@RequestParam(value = "table", required = false) String table,
-			@RequestParam(value = "OpStamp", required = false) String opStamp, @RequestParam(value = "Stamp", required = false) String stamp) {
+			@RequestParam(value = "table", required = false) String table, @RequestParam(value = "OpStamp", required = false) String opStamp,
+			@RequestParam(value = "Stamp", required = false) String stamp) {
 		Timestamp begin = new Timestamp(System.currentTimeMillis());
 		String ts = (opStamp == null) ? stamp : opStamp;
 		logger.info("/iclock/cdata POST:" + sn + "  table:" + table + "  Stamp:" + ts);
@@ -172,8 +171,7 @@ public class CDataEndpoint {
 		info.append(DEVICE_INFO_TransFlag).append(RESP_TEXT_EQUAL).append(DEVICE_INFO_TransFlag_Default).append(RESP_TEXT_N);
 		info.append(DEVICE_INFO_Realtime).append(RESP_TEXT_EQUAL).append(device.getRealtime()).append(RESP_TEXT_N);
 		info.append(DEVICE_INFO_Encrypt).append(RESP_TEXT_EQUAL).append(0).append(RESP_TEXT_N);
-		info.append(DEVICE_INFO_TimeZoneclock).append(RESP_TEXT_EQUAL).append(1).append(RESP_TEXT_N);
-		info.append(DEVICE_INFO_Time_Zone).append(RESP_TEXT_EQUAL).append(1);
+		info.append(DEVICE_INFO_Time_Zone).append(RESP_TEXT_EQUAL).append(device.getTimeZoneOffset()).append(RESP_TEXT_N);
 		return info.toString();
 	}
 
