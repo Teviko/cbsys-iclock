@@ -13,6 +13,7 @@ public class Staff extends BaseEntity {
 	private String grp;
 	private String tz;
 	private int pri;
+	private String verify;
 	private String serialNumber;
 	private String corpToken;
 
@@ -86,6 +87,14 @@ public class Staff extends BaseEntity {
 
 	public void setCorpToken(String corpToken) {
 		this.corpToken = corpToken;
+	}
+
+	public String getVerify() {
+		return verify;
+	}
+
+	public void setVerify(String verify) {
+		this.verify = verify;
 	}
 
 }

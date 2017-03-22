@@ -222,11 +222,11 @@ public class ClockService {
 	}
 
 	/**
-	 * USER PIN=4 Name= Pri=0 Passwd= Card=[0000000000] Grp=1  TZ=0000000
+	 * USER PIN=4 Name= Pri=0 Passwd= Card=[0000000000] Grp=1  TZ=0000000   [Verify=-1]
 	 * USER PIN=4 Name= Passwd= Card=[0000000000] Grp=1  TZ=0000000 Pri=0 
 	 */
 	public void processUSER(DeviceInfo d, String[] tokens, Map<String, Staff> staffMaps, Timestamp cur, String line) throws ErrorDataFormatException {
-		if (tokens == null || tokens.length != 7) {
+		if (tokens == null || tokens.length < 7 || tokens.length > 8) {
 			logger.info(StringUtils.join(tokens, "||"));
 			logger.info("Wrong UserInfo Data Format: " + d.getSn() + " $$$$ " + line);
 			throw new ErrorDataFormatException();
@@ -263,6 +263,8 @@ public class ClockService {
 					staff.setCard(tokens[4].substring(6).replace("]", ""));
 				staff.setGrp(tokens[5].substring(4).trim());
 				staff.setTz(tokens[6].substring(3).trim());
+				if (tokens.length == 8)
+					staff.setVerify(tokens[7].substring(7).trim());
 			}
 			staff.setUpdateTime(cur);
 			staffDao.save(staff);
